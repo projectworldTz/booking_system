@@ -8,7 +8,9 @@ use App\Models\Amenity;
 use App\Models\Hotel;
 use App\Models\HotelCategory;
 use App\Models\HotelImage;
+use App\Models\RoomImage;
 use App\Models\RoomType;
+use Illuminate\Support\Facades\Storage;
 use App\Services\HotelService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,11 @@ class HotelController extends Controller
 
     public function create()
     {
+        if (! auth()->user()->canAddHotel()) {
+            return redirect()->route('owner.hotels.index')
+                ->with('error', 'You have reached your hotel limit. Please contact the platform administrator to register additional properties.');
+        }
+
         $categories = HotelCategory::active()->orderBy('name')->get();
         $amenities  = Amenity::orderBy('category')->orderBy('name')->get();
 
@@ -34,6 +41,11 @@ class HotelController extends Controller
 
     public function store(StoreHotelRequest $request)
     {
+        if (! auth()->user()->canAddHotel()) {
+            return redirect()->route('owner.hotels.index')
+                ->with('error', 'You have reached your hotel limit. Please contact the platform administrator to register additional properties.');
+        }
+
         $hotel = $this->hotelService->create($request->validated(), auth()->user());
 
         if ($request->hasFile('images')) {
@@ -178,6 +190,58 @@ class HotelController extends Controller
         $this->authorizeHotel($hotel);
 
         $this->hotelService->deleteImage($image);
+
+        return back()->with('success', 'Photo deleted.');
+    }
+
+    // ── Room-type image management ────────────────────────────────────────────
+
+    public function storeRoomTypeImages(Request $request, Hotel $hotel, RoomType $roomType): RedirectResponse
+    {
+        $this->authorizeHotel($hotel);
+        abort_if($roomType->hotel_id !== $hotel->id, 404);
+
+        $request->validate([
+            'images'   => ['required', 'array', 'max:8'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ]);
+
+        $nextOrder = $roomType->images()->max('sort_order') + 1;
+
+        foreach ($request->file('images') as $index => $file) {
+            $path = $file->store("room-types/{$roomType->id}", 'public');
+            $roomType->images()->create([
+                'path'        => $path,
+                'url'         => Storage::url($path),
+                'sort_order'  => $nextOrder + $index,
+                'is_featured' => $roomType->images()->count() === 0,
+            ]);
+        }
+
+        return back()->with('success', count($request->file('images')) . ' photo(s) uploaded.');
+    }
+
+    public function setCoverRoomTypeImage(RoomImage $image): RedirectResponse
+    {
+        $roomType = $image->roomType;
+        $this->authorizeHotel($roomType->hotel);
+
+        $roomType->images()->update(['is_featured' => false]);
+        $image->update(['is_featured' => true]);
+
+        return back()->with('success', 'Cover photo updated.');
+    }
+
+    public function deleteRoomTypeImage(RoomImage $image): RedirectResponse
+    {
+        $roomType = $image->roomType;
+        $this->authorizeHotel($roomType->hotel);
+
+        if (Storage::disk('public')->exists($image->path)) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        $image->delete();
 
         return back()->with('success', 'Photo deleted.');
     }

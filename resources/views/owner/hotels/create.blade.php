@@ -1,6 +1,6 @@
 @extends('layouts.owner')
-@section('title', 'Add Hotel')
-@section('page-title', 'List a New Hotel')
+@section('title', __('Add Hotel'))
+@section('page-title', __('List a New Hotel'))
 
 @section('content')
 <div class="max-w-3xl">
@@ -10,37 +10,37 @@
 
             {{-- Basic info --}}
             <div class="card p-6">
-                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">Basic Information</h2>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">{{ __('Basic Information') }}</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="form-label">Hotel Name *</label>
+                        <label class="form-label">{{ __('Hotel Name') }} *</label>
                         <input type="text" name="name" value="{{ old('name') }}"
                                class="form-input @error('name') border-rose-500 @enderror" required>
                         @error('name') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="form-label">Category</label>
+                            <label class="form-label">{{ __('Category') }}</label>
                             <select name="hotel_category_id" class="form-select">
-                                <option value="">Select type…</option>
+                                <option value="">{{ __('Select type…') }}</option>
                                 @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" {{ old('hotel_category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Star Rating *</label>
+                            <label class="form-label">{{ __('Star Rating') }} *</label>
                             <select name="star_rating" class="form-select @error('star_rating') border-rose-500 @enderror" required>
                                 @foreach([1,2,3,4,5] as $s)
-                                <option value="{{ $s }}" {{ old('star_rating', 3) == $s ? 'selected' : '' }}>{{ $s }} Star</option>
+                                <option value="{{ $s }}" {{ old('star_rating', 3) == $s ? 'selected' : '' }}>{{ $s }} {{ __('Star') }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
                     <div>
-                        <label class="form-label">Description</label>
+                        <label class="form-label">{{ __('Description') }}</label>
                         <textarea name="description" rows="4" class="form-textarea"
-                                  placeholder="Describe your hotel…">{{ old('description') }}</textarea>
+                                  placeholder="{{ __('Describe your hotel…') }}">{{ old('description') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -67,10 +67,10 @@
                      },
                      isDragging: false
                  }">
-                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-1">Hotel Photos</h2>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-1">{{ __('Hotel Photos') }}</h2>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                    Upload up to 8 photos. The <span class="font-medium text-slate-700 dark:text-slate-300">first image</span> will be used as the cover / profile photo.
-                    Accepted: JPG, PNG, WebP — max 4 MB each.
+                    {{ __('Upload up to 8 photos. The') }} <span class="font-medium text-slate-700 dark:text-slate-300">{{ __('first image') }}</span> {{ __('will be used as the cover / profile photo.') }}
+                    {{ __('Accepted: JPG, PNG, WebP — max 4 MB each.') }}
                 </p>
 
                 @error('images')   <p class="mb-3 form-error">{{ $message }}</p> @enderror
@@ -94,9 +94,9 @@
                     </svg>
                     <div class="text-center">
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Drag &amp; drop photos here, or <span class="text-navy dark:text-navy-light underline">click to browse</span>
+                            {{ __('Drag & drop photos here, or') }} <span class="text-navy dark:text-navy-light underline">{{ __('click to browse') }}</span>
                         </p>
-                        <p class="mt-1 text-xs text-slate-400">JPG, PNG or WebP · Up to 8 files · Max 4 MB each</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ __('JPG, PNG or WebP · Up to 8 files · Max 4 MB each') }}</p>
                     </div>
 
                     <input type="file" id="hotel-images" name="images[]"
@@ -117,7 +117,7 @@
                             {{-- Cover badge on first image --}}
                             <div x-show="index === 0"
                                  class="absolute top-1.5 left-1.5 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide shadow">
-                                Cover
+                                {{ __('Cover') }}
                             </div>
 
                             {{-- Remove button --}}
@@ -139,32 +139,31 @@
 
                 <p x-show="previews.length > 0"
                    class="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                    <span x-text="previews.length"></span> photo<span x-show="previews.length !== 1">s</span> selected.
-                    You can add more or drag to reorder.
+                    <span x-text="previews.length"></span> {{ __('photo') }}<span x-show="previews.length !== 1">{{ __('s') }}</span> {{ __('selected. You can add more or drag to reorder.') }}
                 </p>
             </div>
 
             {{-- Location --}}
             <div class="card p-6">
-                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">Location</h2>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">{{ __('Location') }}</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="form-label">Address *</label>
+                        <label class="form-label">{{ __('Address') }} *</label>
                         <input type="text" name="address" value="{{ old('address') }}"
                                class="form-input @error('address') border-rose-500 @enderror" required>
                     </div>
                     <div class="grid gap-4 sm:grid-cols-3">
                         <div>
-                            <label class="form-label">City *</label>
+                            <label class="form-label">{{ __('City') }} *</label>
                             <input type="text" name="city" value="{{ old('city') }}"
                                    class="form-input @error('city') border-rose-500 @enderror" required>
                         </div>
                         <div>
-                            <label class="form-label">State / Region</label>
+                            <label class="form-label">{{ __('State / Region') }}</label>
                             <input type="text" name="state" value="{{ old('state') }}" class="form-input">
                         </div>
                         <div>
-                            <label class="form-label">Country *</label>
+                            <label class="form-label">{{ __('Country') }} *</label>
                             <input type="text" name="country" value="{{ old('country') }}"
                                    class="form-input @error('country') border-rose-500 @enderror" required>
                         </div>
@@ -174,14 +173,14 @@
 
             {{-- Policies --}}
             <div class="card p-6">
-                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">Policies</h2>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">{{ __('Policies') }}</h2>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="form-label">Check-in Time</label>
+                        <label class="form-label">{{ __('Check-in Time') }}</label>
                         <input type="time" name="check_in_time" value="{{ old('check_in_time', '14:00') }}" class="form-input">
                     </div>
                     <div>
-                        <label class="form-label">Check-out Time</label>
+                        <label class="form-label">{{ __('Check-out Time') }}</label>
                         <input type="time" name="check_out_time" value="{{ old('check_out_time', '11:00') }}" class="form-input">
                     </div>
                 </div>
@@ -190,7 +189,7 @@
             {{-- Amenities --}}
             @if($amenities->isNotEmpty())
             <div class="card p-6">
-                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">Amenities</h2>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">{{ __('Amenities') }}</h2>
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     @foreach($amenities as $amenity)
                     <label class="flex items-center gap-2 cursor-pointer text-sm">
@@ -205,8 +204,8 @@
             @endif
 
             <div class="flex gap-3">
-                <button type="submit" class="btn-primary">Submit for Review</button>
-                <a href="{{ route('owner.hotels.index') }}" class="btn-ghost">Cancel</a>
+                <button type="submit" class="btn-primary">{{ __('Submit for Review') }}</button>
+                <a href="{{ route('owner.hotels.index') }}" class="btn-ghost">{{ __('Cancel') }}</a>
             </div>
         </div>
     </form>

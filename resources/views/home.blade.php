@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Hotel Management Platform')
+@section('title', __('Hotel Management Platform'))
 
 @section('content')
 
@@ -7,29 +7,28 @@
 <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-navy to-slate-800 text-white">
     <div class="mx-auto max-w-7xl px-6 py-28 lg:py-36 text-center">
         <span class="inline-block rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium tracking-wide mb-6">
-            Multi-Hotel Management Platform
+            {{ __('Multi-Hotel Management Platform') }}
         </span>
         <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl leading-tight">
-            Run your hotel smarter.<br class="hidden sm:block"> All in one place.
+            {{ __('Run your hotel smarter.') }}<br class="hidden sm:block"> {{ __('All in one place.') }}
         </h1>
         <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-300">
-            A complete management system for hotel owners — bookings, rooms, staff,
-            payments and reports under one roof.
+            {{ __('A complete management system for hotel owners — bookings, rooms, staff, payments and reports under one roof.') }}
         </p>
         <div class="mt-10 flex flex-wrap justify-center gap-4">
             @guest
                 <a href="{{ route('register') }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-base font-semibold text-navy shadow-lg hover:bg-slate-100 transition">
-                    Get started free
+                    {{ __('Get started free') }}
                 </a>
                 <a href="{{ route('login') }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-white/30 px-7 py-3.5 text-base font-semibold hover:bg-white/10 transition">
-                    Sign in
+                    {{ __('Sign in') }}
                 </a>
             @else
                 <a href="{{ route('dashboard') }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-base font-semibold text-navy shadow-lg hover:bg-slate-100 transition">
-                    Go to dashboard &rarr;
+                    {{ __('Go to dashboard') }} &rarr;
                 </a>
             @endguest
         </div>
@@ -40,17 +39,17 @@
 <section class="bg-white dark:bg-slate-900 py-20">
     <div class="mx-auto max-w-7xl px-6">
         <h2 class="text-center text-3xl font-bold text-slate-900 dark:text-white mb-14">
-            Everything you need to run a hotel
+            {{ __('Everything you need to run a hotel') }}
         </h2>
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
             @foreach([
-                ['icon' => 'calendar',       'title' => 'Booking Management',  'desc' => 'Handle reservations end-to-end — availability checks to check-out and invoicing.'],
-                ['icon' => 'building-office', 'title' => 'Room & Rate Control', 'desc' => 'Configure room types, seasonal pricing and availability calendars with ease.'],
-                ['icon' => 'users',           'title' => 'Staff & Roles',       'desc' => 'Add receptionists, managers and cashiers scoped strictly to your hotel.'],
-                ['icon' => 'credit-card',     'title' => 'Payments',            'desc' => 'Accept Stripe, PayPal, bank transfer or cash. Every transaction is tracked.'],
-                ['icon' => 'chart-bar',       'title' => 'Reports & Revenue',   'desc' => 'Monthly revenue charts, occupancy rates and booking summaries at a glance.'],
-                ['icon' => 'ticket',          'title' => 'Coupons & Offers',    'desc' => 'Create discount codes scoped to your hotel with flexible rules and expiry.'],
+                ['icon' => 'calendar',       'title' => __('Booking Management'),  'desc' => __('Handle reservations end-to-end — availability checks to check-out and invoicing.')],
+                ['icon' => 'building-office', 'title' => __('Room & Rate Control'), 'desc' => __('Configure room types, seasonal pricing and availability calendars with ease.')],
+                ['icon' => 'users',           'title' => __('Staff & Roles'),       'desc' => __('Add receptionists, managers and cashiers scoped strictly to your hotel.')],
+                ['icon' => 'credit-card',     'title' => __('Payments'),            'desc' => __('Accept Stripe, PayPal, bank transfer or cash. Every transaction is tracked.')],
+                ['icon' => 'chart-bar',       'title' => __('Reports & Revenue'),   'desc' => __('Monthly revenue charts, occupancy rates and booking summaries at a glance.')],
+                ['icon' => 'ticket',          'title' => __('Coupons & Offers'),    'desc' => __('Create discount codes scoped to your hotel with flexible rules and expiry.')],
             ] as $f)
             <div class="rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6">
                 <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-navy/10 text-navy dark:bg-navy/20">
@@ -82,17 +81,17 @@
 {{-- CTA --}}
 <section class="bg-navy py-16 text-center text-white">
     <div class="mx-auto max-w-2xl px-6">
-        <h2 class="text-3xl font-bold mb-4">Ready to get started?</h2>
-        <p class="text-slate-300 mb-8">Create your account and have your hotel set up in minutes.</p>
+        <h2 class="text-3xl font-bold mb-4">{{ __('Ready to get started?') }}</h2>
+        <p class="text-slate-300 mb-8">{{ __('Create your account and have your hotel set up in minutes.') }}</p>
         @guest
             <a href="{{ route('register') }}"
                class="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-navy hover:bg-slate-100 transition">
-                Create a free account
+                {{ __('Create a free account') }}
             </a>
         @else
             <a href="{{ route('dashboard') }}"
                class="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-navy hover:bg-slate-100 transition">
-                Go to your dashboard &rarr;
+                {{ __('Go to your dashboard') }} &rarr;
             </a>
         @endguest
     </div>

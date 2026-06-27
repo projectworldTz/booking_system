@@ -4,16 +4,24 @@
 
 @section('content')
 <div class="mb-4 flex items-center gap-2">
-    <a href="{{ route('owner.hotels.index') }}" class="btn-ghost btn-sm">← My Hotels</a>
-    <a href="{{ route('owner.hotels.coupons.index', $hotel) }}" class="btn-ghost btn-sm ml-auto">Coupons</a>
-    <a href="{{ route('owner.hotels.staff.index', $hotel) }}" class="btn-ghost btn-sm">Staff</a>
+    <a href="{{ route('owner.hotels.index') }}" class="btn-ghost btn-sm">{{ __('← My Hotels') }}</a>
+    <a href="{{ route('owner.hotels.coupons.index', $hotel) }}" class="btn-ghost btn-sm ml-auto">{{ __('Coupons') }}</a>
+    <a href="{{ route('owner.hotels.staff.index', $hotel) }}" class="btn-ghost btn-sm">{{ __('Staff') }}</a>
     @if($hotel->hasFeature('housekeeping'))
-    <a href="{{ route('owner.housekeeping.index', $hotel) }}" class="btn-ghost btn-sm">🧹 Housekeeping</a>
+    <a href="{{ route('owner.housekeeping.index', $hotel) }}" class="btn-ghost btn-sm">🧹 {{ __('Housekeeping') }}</a>
     @endif
     @if($hotel->hasFeature('advanced_analytics'))
-    <a href="{{ route('owner.analytics.index', $hotel) }}" class="btn-ghost btn-sm">📊 Analytics</a>
+    <a href="{{ route('owner.analytics.index', $hotel) }}" class="btn-ghost btn-sm">📊 {{ __('Analytics') }}</a>
     @endif
-    <a href="{{ route('owner.hotels.edit', $hotel) }}" class="btn-outline btn-sm">Edit Hotel</a>
+    @php $pendingCancellations = \App\Models\CancellationApproval::forHotel($hotel->id)->pending()->count(); @endphp
+    <a href="{{ route('owner.cancellation-approvals.index', $hotel) }}"
+       class="relative btn-ghost btn-sm {{ $pendingCancellations ? 'text-amber-600 dark:text-amber-400' : '' }}">
+        ⚠ {{ __('Cancellations') }}
+        @if($pendingCancellations)
+        <span class="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">{{ $pendingCancellations }}</span>
+        @endif
+    </a>
+    <a href="{{ route('owner.hotels.edit', $hotel) }}" class="btn-outline btn-sm">{{ __('Edit Hotel') }}</a>
 </div>
 
 @if(session('success'))
@@ -211,28 +219,144 @@
         {{-- Room types --}}
         <div class="card">
             <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
-                <h3 class="font-bold text-slate-900 dark:text-white">Room Types</h3>
-                <a href="{{ route('owner.hotels.room-types.create', $hotel) }}" class="btn-primary btn-sm">+ Add Room Type</a>
+                <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Room Types') }}</h3>
+                <a href="{{ route('owner.hotels.room-types.create', $hotel) }}" class="btn-primary btn-sm">+ {{ __('Add Room Type') }}</a>
             </div>
             @if($hotel->roomTypes->isEmpty())
-                <p class="p-5 text-sm text-slate-500">No room types added yet.</p>
+                <p class="p-5 text-sm text-slate-500">{{ __('No room types added yet.') }}</p>
             @else
-            <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th>Name</th><th>Bed</th><th>Max Guests</th><th>Base Price</th><th>Rooms</th></tr></thead>
-                    <tbody>
-                        @foreach($hotel->roomTypes as $rt)
-                        <tr class="tr-hover">
-                            <td class="font-medium">{{ $rt->name }}</td>
-                            <td>{{ $rt->beds_count }}× {{ $rt->bed_type }}</td>
-                            <td>{{ $rt->max_guests }}</td>
-                            <td>TZS {{ number_format($rt->base_price, 0) }}</td>
-                            <td>{{ $rt->rooms->count() }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            @foreach($hotel->roomTypes->load('images') as $rt)
+            <div x-data="{ photosOpen: false }" class="border-b border-slate-100 dark:border-slate-700 last:border-0">
+                {{-- Room type row --}}
+                <div class="flex items-center gap-3 px-4 py-3">
+                    {{-- Cover thumbnail --}}
+                    @if($rt->images->isNotEmpty())
+                    <img src="{{ $rt->images->firstWhere('is_featured', true)?->url ?? $rt->images->first()->url }}"
+                         alt="{{ $rt->name }}"
+                         class="h-12 w-16 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-600">
+                    @else
+                    <div class="h-12 w-16 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                        <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                        </svg>
+                    </div>
+                    @endif
+
+                    {{-- Info --}}
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-slate-900 dark:text-white text-sm">{{ $rt->name }}</p>
+                        <p class="text-xs text-slate-500">{{ $rt->beds_count }}× {{ ucfirst($rt->bed_type) }} · {{ __('Max') }} {{ $rt->max_guests }} {{ __('guests') }} · TZS {{ number_format($rt->base_price, 0) }}/{{ __('night') }}</p>
+                    </div>
+
+                    {{-- Stats --}}
+                    <div class="hidden sm:flex items-center gap-4 text-xs text-slate-500">
+                        <span>{{ $rt->rooms->count() }} {{ __('rooms') }}</span>
+                        <span>{{ $rt->images->count() }} {{ __('photos') }}</span>
+                    </div>
+
+                    {{-- Photos toggle --}}
+                    <button @click="photosOpen = !photosOpen"
+                            class="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                        </svg>
+                        {{ __('Photos') }}
+                        <svg class="h-3 w-3 transition-transform" :class="photosOpen && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Expandable photos panel --}}
+                <div x-show="photosOpen" x-collapse class="px-4 pb-4">
+                    <div class="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 p-4">
+
+                        {{-- Existing photos --}}
+                        @if($rt->images->isNotEmpty())
+                        <div class="grid grid-cols-3 gap-2 sm:grid-cols-6 mb-4">
+                            @foreach($rt->images->sortByDesc('is_featured') as $img)
+                            <div class="relative group rounded-xl overflow-hidden aspect-square bg-slate-200 dark:bg-slate-700" x-data="{ confirming: false }">
+                                <img src="{{ $img->url }}" alt="" class="h-full w-full object-cover transition group-hover:brightness-75">
+
+                                @if($img->is_featured)
+                                <div class="absolute top-1 left-1 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold text-white uppercase shadow">{{ __('Cover') }}</div>
+                                @endif
+
+                                <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition">
+                                    @unless($img->is_featured)
+                                    <form method="POST" action="{{ route('owner.hotels.room-type-images.set-cover', $img) }}">
+                                        @csrf
+                                        <button class="rounded-lg bg-white/90 px-2 py-1 text-[10px] font-semibold text-slate-800 shadow hover:bg-gold hover:text-white transition whitespace-nowrap">
+                                            ★ {{ __('Set Cover') }}
+                                        </button>
+                                    </form>
+                                    @endunless
+
+                                    <div>
+                                        <button type="button" @click="confirming = true"
+                                                class="rounded-lg bg-white/90 px-2 py-1 text-[10px] font-semibold text-slate-800 shadow hover:bg-rose-600 hover:text-white transition">
+                                            {{ __('Delete') }}
+                                        </button>
+                                        <div x-show="confirming" x-cloak
+                                             class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 rounded-xl p-2">
+                                            <p class="text-[10px] text-white text-center font-medium">{{ __('Delete this photo?') }}</p>
+                                            <div class="flex gap-1.5">
+                                                <button @click="confirming = false" class="rounded-lg bg-white/20 px-2 py-1 text-[10px] text-white hover:bg-white/30 transition">{{ __('No') }}</button>
+                                                <form method="POST" action="{{ route('owner.hotels.room-type-images.destroy', $img) }}">
+                                                    @csrf @method('DELETE')
+                                                    <button class="rounded-lg bg-rose-600 px-2 py-1 text-[10px] text-white font-semibold hover:bg-rose-700 transition">{{ __('Yes') }}</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <p class="text-xs text-slate-400 italic mb-3">{{ __('No photos yet. Upload some below.') }}</p>
+                        @endif
+
+                        {{-- Upload form --}}
+                        <form method="POST"
+                              action="{{ route('owner.hotels.room-types.images.store', [$hotel, $rt]) }}"
+                              enctype="multipart/form-data"
+                              x-data="{
+                                  previews: [],
+                                  addFiles(e) {
+                                      Array.from(e.target.files).forEach(f => {
+                                          const r = new FileReader();
+                                          r.onload = ev => this.previews.push(ev.target.result);
+                                          r.readAsDataURL(f);
+                                      });
+                                  }
+                              }">
+                            @csrf
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <label class="cursor-pointer flex items-center gap-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:border-navy hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                                    </svg>
+                                    {{ __('Choose Photos') }}
+                                    <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp"
+                                           class="sr-only" @change="addFiles($event)">
+                                </label>
+
+                                <button type="submit" x-show="previews.length > 0" class="btn-primary btn-sm">
+                                    {{ __('Upload') }} <span x-text="previews.length"></span> {{ __('Photo(s)') }}
+                                </button>
+
+                                <div x-show="previews.length > 0" class="flex gap-1.5">
+                                    <template x-for="url in previews" :key="url">
+                                        <img :src="url" class="h-10 w-10 rounded-lg object-cover border border-slate-200 dark:border-slate-600">
+                                    </template>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
+            @endforeach
             @endif
         </div>
     </div>

@@ -1,14 +1,14 @@
 @extends('layouts.app')
-@section('title', 'Browse Hotels')
+@section('title', __('Browse Hotels'))
 
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
     {{-- Page header --}}
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Browse Hotels</h1>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ __('Browse Hotels') }}</h1>
         <p class="mt-1 text-slate-500 dark:text-slate-400">
-            {{ $hotels->total() }} {{ Str::plural('hotel', $hotels->total()) }} found
-            @if(!empty($filters['search'])) for "<em>{{ $filters['search'] }}</em>" @endif
+            {{ $hotels->total() }} {{ Str::plural(__('hotel'), $hotels->total()) }} {{ __('found') }}
+            @if(!empty($filters['search'])) {{ __('for') }} "<em>{{ $filters['search'] }}</em>" @endif
         </p>
     </div>
 
@@ -17,7 +17,7 @@
         <aside x-data="{ open: false }" class="lg:col-span-1">
             <button @click="open = !open"
                     class="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 lg:hidden">
-                <span class="text-sm font-semibold text-slate-900 dark:text-white">Filters</span>
+                <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ __('Filters') }}</span>
                 <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
                 </svg>
@@ -37,7 +37,7 @@
         <div class="lg:col-span-3">
             {{-- Sort bar --}}
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <span class="text-sm text-slate-500 dark:text-slate-400">Showing {{ $hotels->count() }} of {{ $hotels->total() }}</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">{{ __('Showing') }} {{ $hotels->count() }} {{ __('of') }} {{ $hotels->total() }}</span>
                 <form method="GET" action="{{ route('hotels.index') }}" id="sort-form">
                     @foreach($filters as $key => $val)
                         @if($key !== 'sort')
@@ -46,11 +46,11 @@
                     @endforeach
                     <select name="sort" onchange="document.getElementById('sort-form').submit()"
                             class="form-select w-auto py-2 text-sm">
-                        <option value="featured" {{ ($filters['sort'] ?? '') === 'featured' ? 'selected' : '' }}>Featured</option>
-                        <option value="rating"    {{ ($filters['sort'] ?? '') === 'rating'   ? 'selected' : '' }}>Top Rated</option>
-                        <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc'? 'selected' : '' }}>Price ↑</option>
-                        <option value="price_desc"{{ ($filters['sort'] ?? '') === 'price_desc'? 'selected' : '' }}>Price ↓</option>
-                        <option value="newest"    {{ ($filters['sort'] ?? '') === 'newest'   ? 'selected' : '' }}>Newest</option>
+                        <option value="featured" {{ ($filters['sort'] ?? '') === 'featured' ? 'selected' : '' }}>{{ __('Featured') }}</option>
+                        <option value="rating"    {{ ($filters['sort'] ?? '') === 'rating'   ? 'selected' : '' }}>{{ __('Top Rated') }}</option>
+                        <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc'? 'selected' : '' }}>{{ __('Price') }} ↑</option>
+                        <option value="price_desc"{{ ($filters['sort'] ?? '') === 'price_desc'? 'selected' : '' }}>{{ __('Price') }} ↓</option>
+                        <option value="newest"    {{ ($filters['sort'] ?? '') === 'newest'   ? 'selected' : '' }}>{{ __('Newest') }}</option>
                     </select>
                 </form>
             </div>
@@ -60,9 +60,9 @@
                     <svg class="h-14 w-14 text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">No hotels found</h3>
-                    <p class="mt-1 text-sm text-slate-500">Try adjusting your filters or search terms.</p>
-                    <a href="{{ route('hotels.index') }}" class="btn-outline btn-sm mt-4">Clear Filters</a>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ __('No hotels found') }}</h3>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('Try adjusting your filters or search terms.') }}</p>
+                    <a href="{{ route('hotels.index') }}" class="btn-outline btn-sm mt-4">{{ __('Clear Filters') }}</a>
                 </div>
             @else
                 <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -101,7 +101,7 @@
                                 @endif
                                 <span class="text-sm font-bold text-navy dark:text-navy-light">
                                     @if($hotel->roomTypes->isNotEmpty())
-                                        From ${{ number_format($hotel->roomTypes->min('base_price'), 0) }}/night
+                                        {{ __('from') }} ${{ number_format($hotel->roomTypes->min('base_price'), 0) }}/{{ __('night') }}
                                     @endif
                                 </span>
                             </div>

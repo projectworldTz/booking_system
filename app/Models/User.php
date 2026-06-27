@@ -20,6 +20,7 @@ class User extends Authenticatable
         'phone',
         'avatar',
         'marketing_opt_in',
+        'max_hotels',
     ];
 
     protected $hidden = [
@@ -79,6 +80,13 @@ class User extends Authenticatable
     public function ownedHotels()
     {
         return $this->hasMany(Hotel::class, 'owner_id');
+    }
+
+    /** Whether this owner can still register another hotel */
+    public function canAddHotel(): bool
+    {
+        $limit = (int) ($this->max_hotels ?? 1);
+        return $this->ownedHotels()->count() < $limit;
     }
 
     /** Staff assignments (receptionist scoped to a hotel) */

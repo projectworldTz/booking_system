@@ -4,14 +4,14 @@
 
     {{-- Search --}}
     <div class="p-4">
-        <label class="form-label">Search</label>
+        <label class="form-label">{{ __('Search') }}</label>
         <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
-               class="form-input text-sm" placeholder="Hotel name, city…">
+               class="form-input text-sm" placeholder="{{ __('Hotel name, city…') }}">
     </div>
 
     {{-- Stars --}}
     <div class="p-4">
-        <p class="form-label mb-2">Star Rating</p>
+        <p class="form-label mb-2">{{ __('Star Rating') }}</p>
         <div class="space-y-1.5">
             @foreach([5, 4, 3, 2, 1] as $star)
             <label class="flex items-center gap-2 cursor-pointer">
@@ -21,7 +21,7 @@
                 <span class="flex text-gold">
                     @for($i = 1; $i <= $star; $i++) ★ @endfor
                 </span>
-                <span class="text-xs text-slate-500 dark:text-slate-400">{{ $star }}-Star</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400">{{ $star }}-{{ __('Star') }}</span>
             </label>
             @endforeach
         </div>
@@ -30,9 +30,9 @@
     {{-- Category --}}
     @if($categories->isNotEmpty())
     <div class="p-4">
-        <label class="form-label">Hotel Type</label>
+        <label class="form-label">{{ __('Hotel Type') }}</label>
         <select name="category_id" class="form-select text-sm">
-            <option value="">All Types</option>
+            <option value="">{{ __('All Types') }}</option>
             @foreach($categories as $cat)
                 <option value="{{ $cat->id }}" {{ ($filters['category_id'] ?? '') == $cat->id ? 'selected' : '' }}>
                     {{ $cat->name }}
@@ -44,31 +44,31 @@
 
     {{-- Price --}}
     <div class="p-4">
-        <p class="form-label mb-2">Price per night</p>
+        <p class="form-label mb-2">{{ __('Price per night') }}</p>
         <div class="grid grid-cols-2 gap-2">
             <div>
-                <label class="text-xs text-slate-500 dark:text-slate-400">Min ($)</label>
+                <label class="text-xs text-slate-500 dark:text-slate-400">{{ __('Min') }} ($)</label>
                 <input type="number" name="min_price" value="{{ $filters['min_price'] ?? '' }}"
                        min="0" class="form-input text-sm" placeholder="0">
             </div>
             <div>
-                <label class="text-xs text-slate-500 dark:text-slate-400">Max ($)</label>
+                <label class="text-xs text-slate-500 dark:text-slate-400">{{ __('Max') }} ($)</label>
                 <input type="number" name="max_price" value="{{ $filters['max_price'] ?? '' }}"
-                       min="0" class="form-input text-sm" placeholder="Any">
+                       min="0" class="form-input text-sm" placeholder="{{ __('Any') }}">
             </div>
         </div>
     </div>
 
     {{-- City --}}
     <div class="p-4">
-        <label class="form-label">City</label>
+        <label class="form-label">{{ __('City') }}</label>
         <input type="text" name="city" value="{{ $filters['city'] ?? '' }}"
-               class="form-input text-sm" placeholder="e.g. New York">
+               class="form-input text-sm" placeholder="{{ __('e.g. New York') }}">
     </div>
 
     {{-- Actions --}}
     <div class="flex gap-2 p-4">
-        <button type="submit" class="btn-primary btn-sm flex-1">Apply</button>
-        <a href="{{ route('hotels.index') }}" class="btn-ghost btn-sm">Clear</a>
+        <button type="submit" class="btn-primary btn-sm flex-1">{{ __('Apply') }}</button>
+        <a href="{{ route('hotels.index') }}" class="btn-ghost btn-sm">{{ __('Clear') }}</a>
     </div>
 </form>

@@ -12,6 +12,7 @@ enum Feature: string
     case GUEST_SURVEYS        = 'guest_surveys';
 
     // ── Tier 2 – Operations ───────────────────────────────────────────────────
+    case INVENTORY_MANAGEMENT = 'inventory_management';
     case MAINTENANCE_REQUESTS = 'maintenance_requests';
     case GUEST_MESSAGING      = 'guest_messaging';
     case DIGITAL_CHECKIN      = 'digital_checkin';
@@ -29,6 +30,7 @@ enum Feature: string
     case CUSTOM_DOMAIN        = 'custom_domain';
     case PRIORITY_SUPPORT     = 'priority_support';
     case API_ACCESS           = 'api_access';
+    case AI_CONCIERGE         = 'ai_concierge';
 
     public function label(): string
     {
@@ -38,6 +40,7 @@ enum Feature: string
             self::EMAIL_MARKETING      => 'Email Marketing Tool',
             self::UPSELLING            => 'Upselling Engine',
             self::GUEST_SURVEYS        => 'Guest Satisfaction Surveys',
+            self::INVENTORY_MANAGEMENT => 'Inventory & Asset Management',
             self::MAINTENANCE_REQUESTS => 'Maintenance Requests',
             self::GUEST_MESSAGING      => 'In-stay Guest Messaging',
             self::DIGITAL_CHECKIN      => 'Digital Check-in',
@@ -51,6 +54,7 @@ enum Feature: string
             self::CUSTOM_DOMAIN        => 'Custom Domain',
             self::PRIORITY_SUPPORT     => 'Priority Support',
             self::API_ACCESS           => 'API Access',
+            self::AI_CONCIERGE         => 'AI Concierge (Chat)',
         };
     }
 
@@ -62,6 +66,7 @@ enum Feature: string
             self::EMAIL_MARKETING      => 'Send promotional emails and newsletters to past and upcoming guests.',
             self::UPSELLING            => 'Offer room upgrades, early check-in, and add-ons during the booking flow.',
             self::GUEST_SURVEYS        => 'Auto-send satisfaction surveys after check-out and view aggregated results.',
+            self::INVENTORY_MANAGEMENT => 'Track furniture, electronics, appliances, and all hotel assets with condition, location, purchase value, and warranty.',
             self::MAINTENANCE_REQUESTS => 'Guests and staff submit maintenance issues; tracked to resolution.',
             self::GUEST_MESSAGING      => 'In-platform chat between front desk and in-house guests.',
             self::DIGITAL_CHECKIN      => 'Pre-arrival ID upload, arrival time, and preferences form for guests.',
@@ -75,6 +80,7 @@ enum Feature: string
             self::CUSTOM_DOMAIN        => 'Serve the hotel booking page from the hotel\'s own domain.',
             self::PRIORITY_SUPPORT     => 'Dedicated account manager with SLA-backed support response times.',
             self::API_ACCESS           => 'REST API key to integrate the platform with external systems.',
+            self::AI_CONCIERGE         => 'Embed an AI-powered chat assistant on the hotel\'s public page. Guests can ask about rooms, rates, policies, and local attractions — answered instantly by a Claude-powered concierge trained on the hotel\'s own data.',
         };
     }
 
@@ -86,6 +92,7 @@ enum Feature: string
             self::EMAIL_MARKETING,
             self::UPSELLING,
             self::GUEST_SURVEYS         => 'Growth',
+            self::INVENTORY_MANAGEMENT,
             self::MAINTENANCE_REQUESTS,
             self::GUEST_MESSAGING,
             self::DIGITAL_CHECKIN,
@@ -98,7 +105,8 @@ enum Feature: string
             self::WHITE_LABEL,
             self::CUSTOM_DOMAIN,
             self::PRIORITY_SUPPORT,
-            self::API_ACCESS            => 'Premium',
+            self::API_ACCESS,
+            self::AI_CONCIERGE          => 'Premium',
         };
     }
 

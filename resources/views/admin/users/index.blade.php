@@ -1,20 +1,20 @@
 @extends('layouts.admin')
-@section('title', 'Users')
-@section('page-title', 'Users')
+@section('title', __('Users'))
+@section('page-title', __('Users'))
 
 @section('content')
 <div class="mb-5">
     <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap gap-2">
         <input type="text" name="search" value="{{ request('search') }}"
-               class="form-input w-56 py-2 text-sm" placeholder="Name or email…">
+               class="form-input w-56 py-2 text-sm" placeholder="{{ __('Name or email…') }}">
         <select name="role" class="form-select py-2 text-sm w-auto">
-            <option value="">All Roles</option>
-            <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
-            <option value="hotel_owner" {{ request('role') === 'hotel_owner' ? 'selected' : '' }}>Hotel Owner</option>
-            <option value="customer"    {{ request('role') === 'customer'    ? 'selected' : '' }}>Customer</option>
+            <option value="">{{ __('All Roles') }}</option>
+            <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>{{ __('Super Admin') }}</option>
+            <option value="hotel_owner" {{ request('role') === 'hotel_owner' ? 'selected' : '' }}>{{ __('Hotel Owner') }}</option>
+            <option value="customer"    {{ request('role') === 'customer'    ? 'selected' : '' }}>{{ __('Customer') }}</option>
         </select>
-        <button type="submit" class="btn-primary btn-sm">Filter</button>
-        <a href="{{ route('admin.users.index') }}" class="btn-ghost btn-sm">Reset</a>
+        <button type="submit" class="btn-primary btn-sm">{{ __('Filter') }}</button>
+        <a href="{{ route('admin.users.index') }}" class="btn-ghost btn-sm">{{ __('Reset') }}</a>
     </form>
 </div>
 
@@ -22,11 +22,11 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Joined</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Email') }}</th>
+                <th>{{ __('Role') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Joined') }}</th>
                 <th></th>
             </tr>
         </thead>
@@ -42,16 +42,16 @@
                 </td>
                 <td>
                     @if($user->is_active ?? true)
-                        <span class="badge badge-active">Active</span>
+                        <span class="badge badge-active">{{ __('Active') }}</span>
                     @else
-                        <span class="badge badge-suspended">Inactive</span>
+                        <span class="badge badge-suspended">{{ __('Inactive') }}</span>
                     @endif
                 </td>
                 <td class="text-sm text-slate-500 whitespace-nowrap">{{ $user->created_at->format('d M Y') }}</td>
-                <td><a href="{{ route('admin.users.show', $user) }}" class="btn-ghost btn-sm">Manage</a></td>
+                <td><a href="{{ route('admin.users.show', $user) }}" class="btn-ghost btn-sm">{{ __('Manage') }}</a></td>
             </tr>
             @empty
-            <tr><td colspan="6" class="text-center py-10 text-slate-500">No users found.</td></tr>
+            <tr><td colspan="6" class="text-center py-10 text-slate-500">{{ __('No users found.') }}</td></tr>
             @endforelse
         </tbody>
     </table>

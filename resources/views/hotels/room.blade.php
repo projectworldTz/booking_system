@@ -6,7 +6,7 @@
 
     {{-- Breadcrumb --}}
     <nav class="mb-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-        <a href="{{ route('hotels.index') }}" class="hover:text-navy dark:hover:text-navy-light">Hotels</a>
+        <a href="{{ route('hotels.index') }}" class="hover:text-navy dark:hover:text-navy-light">{{ __('Hotels') }}</a>
         <span>/</span>
         <a href="{{ route('hotels.show', $hotel) }}" class="hover:text-navy dark:hover:text-navy-light truncate max-w-[160px]">{{ $hotel->name }}</a>
         <span>/</span>
@@ -53,11 +53,11 @@
                         <div class="mt-2 flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-400">
                             <span class="flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>
-                                {{ ucfirst($roomType->bed_type) }} bed × {{ $roomType->beds_count }}
+                                {{ ucfirst($roomType->bed_type) }} {{ __('bed') }} × {{ $roomType->beds_count }}
                             </span>
                             <span class="flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                Up to {{ $roomType->max_guests }} {{ Str::plural('guest', $roomType->max_guests) }}
+                                {{ __('Up to') }} {{ $roomType->max_guests }} {{ Str::plural(__('guest'), $roomType->max_guests) }}
                             </span>
                             @if($roomType->size_sqm)
                             <span class="flex items-center gap-1">
@@ -74,7 +74,7 @@
                         <div class="text-3xl font-bold text-navy dark:text-navy-light">
                             TZS {{ number_format($roomType->base_price, 0) }}
                         </div>
-                        <div class="text-xs text-slate-500">per night</div>
+                        <div class="text-xs text-slate-500">{{ __('per night') }}</div>
                     </div>
                 </div>
 
@@ -86,7 +86,7 @@
             {{-- Room amenities --}}
             @if($roomType->amenities->isNotEmpty())
             <div class="card p-6">
-                <h2 class="section-title mb-4">Room Amenities</h2>
+                <h2 class="section-title mb-4">{{ __('Room Amenities') }}</h2>
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     @foreach($roomType->amenities as $amenity)
                     <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -102,8 +102,8 @@
 
             {{-- Availability calendar --}}
             <div class="card p-6">
-                <h2 class="section-title mb-1">Availability</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Calendar shows availability for the current month.</p>
+                <h2 class="section-title mb-1">{{ __('Availability') }}</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">{{ __('Calendar shows availability for the current month.') }}</p>
 
                 <div x-data="availabilityCalendar(
                     @json($calendar),
@@ -114,9 +114,9 @@
                     {{-- Nav --}}
                     <div class="flex items-center justify-between mb-3">
                         <button @click="prevMonth()" :disabled="isPrevDisabled()"
-                                class="btn-ghost btn-sm disabled:opacity-40">← Prev</button>
+                                class="btn-ghost btn-sm disabled:opacity-40">← {{ __('Prev') }}</button>
                         <span class="text-sm font-semibold text-slate-900 dark:text-white" x-text="monthLabel()"></span>
-                        <button @click="nextMonth()" class="btn-ghost btn-sm">Next →</button>
+                        <button @click="nextMonth()" class="btn-ghost btn-sm">{{ __('Next') }} →</button>
                     </div>
 
                     {{-- Day headers --}}
@@ -145,8 +145,8 @@
 
                     {{-- Legend --}}
                     <div class="mt-3 flex gap-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded bg-emerald-100"></span> Available</span>
-                        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded bg-rose-100"></span> Booked</span>
+                        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded bg-emerald-100"></span> {{ __('Available') }}</span>
+                        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded bg-rose-100"></span> {{ __('Booked') }}</span>
                     </div>
                 </div>
             </div>
@@ -154,12 +154,12 @@
             {{-- Hotel info strip --}}
             <div class="card p-5 flex items-center gap-4">
                 <div class="min-w-0 flex-1">
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Part of</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Part of') }}</p>
                     <a href="{{ route('hotels.show', $hotel) }}"
                        class="font-semibold text-navy dark:text-navy-light hover:underline">{{ $hotel->name }}</a>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $hotel->city }}, {{ $hotel->country }}</p>
                 </div>
-                <a href="{{ route('hotels.show', $hotel) }}" class="btn-ghost btn-sm shrink-0">View Hotel →</a>
+                <a href="{{ route('hotels.show', $hotel) }}" class="btn-ghost btn-sm shrink-0">{{ __('View Hotel') }} →</a>
             </div>
         </div>
 
@@ -174,37 +174,37 @@
                 <div>
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $roomType->name }}</h3>
                     <p class="text-2xl font-bold text-navy dark:text-navy-light mt-0.5">
-                        TZS {{ number_format($roomType->base_price, 0) }}<span class="text-sm font-normal text-slate-500"> / night</span>
+                        TZS {{ number_format($roomType->base_price, 0) }}<span class="text-sm font-normal text-slate-500"> / {{ __('night') }}</span>
                     </p>
                 </div>
 
                 <div class="space-y-3">
                     <div>
-                        <label class="form-label">Check-in</label>
+                        <label class="form-label">{{ __('Check-in') }}</label>
                         <input type="date" x-model="checkIn" @change="clearResult()"
                                class="form-input" min="{{ now()->toDateString() }}">
                     </div>
                     <div>
-                        <label class="form-label">Check-out</label>
+                        <label class="form-label">{{ __('Check-out') }}</label>
                         <input type="date" x-model="checkOut" @change="clearResult()"
                                class="form-input" :min="checkIn || '{{ now()->addDay()->toDateString() }}'">
                     </div>
                     <div>
-                        <label class="form-label">Guests</label>
+                        <label class="form-label">{{ __('Guests') }}</label>
                         <input type="number" x-model.number="guests" min="1"
                                max="{{ $roomType->max_guests }}" class="form-input">
-                        <p class="mt-0.5 text-xs text-slate-400">Max {{ $roomType->max_guests }} guests</p>
+                        <p class="mt-0.5 text-xs text-slate-400">{{ __('Max') }} {{ $roomType->max_guests }} {{ __('guests') }}</p>
                     </div>
                 </div>
 
                 {{-- Price summary --}}
                 <div x-show="nights > 0" class="rounded-xl bg-slate-50 dark:bg-slate-700/50 p-3 text-sm space-y-1">
                     <div class="flex justify-between text-slate-600 dark:text-slate-300">
-                        <span x-text="'TZS {{ number_format($roomType->base_price, 0) }} × ' + nights + ' nights'"></span>
+                        <span x-text="'TZS {{ number_format($roomType->base_price, 0) }} × ' + nights + ' {{ __('nights') }}'"></span>
                         <span x-text="'TZS ' + ({{ $roomType->base_price }} * nights).toLocaleString()"></span>
                     </div>
                     <div class="flex justify-between font-bold text-slate-900 dark:text-white pt-1 border-t border-slate-200 dark:border-slate-600">
-                        <span>Total</span>
+                        <span>{{ __('Total') }}</span>
                         <span x-text="'TZS ' + ({{ $roomType->base_price }} * nights).toLocaleString()"></span>
                     </div>
                 </div>
@@ -213,7 +213,7 @@
                 <div x-show="result !== null">
                     <div x-show="result === false"
                          class="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-3 text-sm text-rose-700 dark:text-rose-300">
-                        No rooms available for these dates.
+                        {{ __('No rooms available for these dates.') }}
                     </div>
                 </div>
 
@@ -227,17 +227,17 @@
                     <button type="submit"
                             :disabled="!checkIn || !checkOut || loading"
                             class="btn-gold w-full">
-                        <span x-show="!loading">Reserve Now</span>
-                        <span x-show="loading">Checking…</span>
+                        <span x-show="!loading">{{ __('Reserve Now') }}</span>
+                        <span x-show="loading">{{ __('Checking…') }}</span>
                     </button>
                 </form>
                 @else
-                <a href="{{ route('login') }}" class="btn-outline w-full block text-center">Sign in to Book</a>
+                <a href="{{ route('login') }}" class="btn-outline w-full block text-center">{{ __('Sign in to Book') }}</a>
                 @endauth
 
                 @if($hotel->cancellation_policy)
                 <p class="text-xs text-slate-400 dark:text-slate-500">
-                    <span class="font-medium text-slate-600 dark:text-slate-300">Cancellation:</span>
+                    <span class="font-medium text-slate-600 dark:text-slate-300">{{ __('Cancellation') }}:</span>
                     {{ $hotel->cancellation_policy }}
                 </p>
                 @endif

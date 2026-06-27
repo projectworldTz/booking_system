@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -60,5 +61,16 @@ class UserController extends Controller
         $state = $user->fresh()->is_active ? 'activated' : 'deactivated';
 
         return back()->with('success', "{$user->name} has been {$state}.");
+    }
+
+    public function updateHotelLimit(User $user, Request $request)
+    {
+        $data = $request->validate([
+            'max_hotels' => ['required', 'integer', 'min:1', 'max:99'],
+        ]);
+
+        $user->update(['max_hotels' => $data['max_hotels']]);
+
+        return back()->with('success', "{$user->name} can now register up to {$data['max_hotels']} " . Str::plural('hotel', $data['max_hotels']) . '.');
     }
 }

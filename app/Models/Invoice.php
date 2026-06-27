@@ -10,29 +10,29 @@ class Invoice extends Model
     use HasFactory;
 
     protected $fillable = [
-        'booking_id',
-        'invoice_number',
-        'subtotal',
-        'tax_total',
-        'discount_total',
-        'grand_total',
-        'currency',
-        'status',
-        'issued_at',
-        'due_at',
-        'paid_at',
+        'booking_id', 'invoice_number',
+        'subtotal', 'tax_total', 'discount_total', 'grand_total',
+        'cancellation_deduction', 'refund_amount', 'deduction_percentage',
+        'currency', 'status',
+        'issued_at', 'due_at', 'paid_at', 'cancelled_at',
         'notes',
     ];
 
     protected $casts = [
-        'subtotal'       => 'decimal:2',
-        'tax_total'      => 'decimal:2',
-        'discount_total' => 'decimal:2',
-        'grand_total'    => 'decimal:2',
-        'issued_at'      => 'datetime',
-        'due_at'         => 'datetime',
-        'paid_at'        => 'datetime',
+        'subtotal'               => 'decimal:2',
+        'tax_total'              => 'decimal:2',
+        'discount_total'         => 'decimal:2',
+        'grand_total'            => 'decimal:2',
+        'cancellation_deduction' => 'decimal:2',
+        'refund_amount'          => 'decimal:2',
+        'deduction_percentage'   => 'decimal:2',
+        'issued_at'              => 'datetime',
+        'due_at'                 => 'datetime',
+        'paid_at'                => 'datetime',
+        'cancelled_at'           => 'datetime',
     ];
+
+    public function isCancelled(): bool { return $this->status === 'cancelled'; }
 
     public function booking()
     {

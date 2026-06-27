@@ -100,6 +100,11 @@ class Booking extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function cancellationApproval()
+    {
+        return $this->hasOne(\App\Models\CancellationApproval::class);
+    }
+
     public function review()
     {
         return $this->hasOne(Review::class);

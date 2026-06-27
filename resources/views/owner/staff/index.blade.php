@@ -1,17 +1,24 @@
 @extends('layouts.owner')
-@section('title', 'Staff — ' . $hotel->name)
-@section('page-title', 'Staff — ' . $hotel->name)
+@section('title', __('Staff') . ' — ' . $hotel->name)
+@section('page-title', __('Staff') . ' — ' . $hotel->name)
 
 @section('content')
 <div class="mb-4 flex items-center gap-2">
     <a href="{{ route('owner.hotels.show', $hotel) }}" class="btn-ghost btn-sm">← {{ $hotel->name }}</a>
-    <a href="{{ route('owner.hotels.staff.create', $hotel) }}" class="btn-primary btn-sm ml-auto">+ Invite Staff</a>
+    <a href="{{ route('owner.hotels.staff.create', $hotel) }}" class="btn-primary btn-sm ml-auto">+ {{ __('Invite Staff') }}</a>
 </div>
 
 <div class="card table-wrap">
     <table class="table">
         <thead>
-            <tr><th>Name</th><th>Email</th><th>Position</th><th>Status</th><th>Added</th><th></th></tr>
+            <tr>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Email') }}</th>
+                <th>{{ __('Position') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Added') }}</th>
+                <th></th>
+            </tr>
         </thead>
         <tbody>
             @forelse($staff as $member)
@@ -21,7 +28,7 @@
                 <td class="capitalize">{{ $member->position }}</td>
                 <td>
                     <span class="badge {{ $member->active ? 'badge-active' : 'badge-cancelled' }}">
-                        {{ $member->active ? 'Active' : 'Inactive' }}
+                        {{ $member->active ? __('Active') : __('Inactive') }}
                     </span>
                 </td>
                 <td class="text-slate-500">{{ $member->created_at->format('d M Y') }}</td>
@@ -29,18 +36,18 @@
                     <div class="flex items-center gap-1">
                         <form method="POST" action="{{ route('owner.hotels.staff.toggle', [$hotel, $member->user]) }}">
                             @csrf
-                            <button class="btn-ghost btn-sm">{{ $member->active ? 'Deactivate' : 'Activate' }}</button>
+                            <button class="btn-ghost btn-sm">{{ $member->active ? __('Deactivate') : __('Activate') }}</button>
                         </form>
                         <form method="POST" action="{{ route('owner.hotels.staff.destroy', [$hotel, $member->user]) }}"
-                              x-data x-on:submit.prevent="if(confirm('Remove this staff member?')) $el.submit()">
+                              x-data x-on:submit.prevent="if(confirm('{{ __('Remove this staff member?') }}')) $el.submit()">
                             @csrf @method('DELETE')
-                            <button class="btn-danger btn-sm">Remove</button>
+                            <button class="btn-danger btn-sm">{{ __('Remove') }}</button>
                         </form>
                     </div>
                 </td>
             </tr>
             @empty
-            <tr><td colspan="6" class="py-10 text-center text-slate-500">No staff assigned yet. <a href="{{ route('owner.hotels.staff.create', $hotel) }}" class="text-navy underline">Invite someone</a>.</td></tr>
+            <tr><td colspan="6" class="py-10 text-center text-slate-500">{{ __('No staff assigned yet.') }} <a href="{{ route('owner.hotels.staff.create', $hotel) }}" class="text-navy underline">{{ __('Invite someone') }}</a>.</td></tr>
             @endforelse
         </tbody>
     </table>

@@ -1,15 +1,15 @@
 @extends('layouts.receptionist')
-@section('title', 'Housekeeping')
-@section('page-title', 'Housekeeping')
+@section('title', __('Housekeeping'))
+@section('page-title', __('Housekeeping'))
 
 @section('content')
 
 {{-- ── Summary cards ────────────────────────────────────────────────────────── --}}
 <div class="grid gap-4 sm:grid-cols-3 mb-6">
     @foreach([
-        ['Pending',       $summary['pending'],     'text-amber-600 dark:text-amber-400',   'bg-amber-50 dark:bg-amber-900/20',   'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'],
-        ['In Progress',   $summary['in_progress'], 'text-blue-600 dark:text-blue-400',     'bg-blue-50 dark:bg-blue-900/20',     'M13 10V3L4 14h7v7l9-11h-7z'],
-        ['Done Today',    $summary['completed'],   'text-emerald-600 dark:text-emerald-400','bg-emerald-50 dark:bg-emerald-900/20','M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+        [__('Pending'),     $summary['pending'],     'text-amber-600 dark:text-amber-400',   'bg-amber-50 dark:bg-amber-900/20',   'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'],
+        [__('In Progress'), $summary['in_progress'], 'text-blue-600 dark:text-blue-400',     'bg-blue-50 dark:bg-blue-900/20',     'M13 10V3L4 14h7v7l9-11h-7z'],
+        [__('Done Today'),  $summary['completed'],   'text-emerald-600 dark:text-emerald-400','bg-emerald-50 dark:bg-emerald-900/20','M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
     ] as [$label, $count, $textColor, $bgColor, $icon])
     <div class="stat-card">
         <div class="flex items-center justify-between">
@@ -31,19 +31,19 @@
     {{-- Filters --}}
     <form method="GET" class="flex flex-wrap gap-2">
         <select name="status" class="form-input w-auto text-sm" onchange="this.form.submit()">
-            <option value="">All Statuses</option>
-            @foreach(['pending' => 'Pending', 'in_progress' => 'In Progress', 'completed' => 'Completed', 'inspected' => 'Inspected'] as $val => $lbl)
+            <option value="">{{ __('All Statuses') }}</option>
+            @foreach(['pending' => __('Pending'), 'in_progress' => __('In Progress'), 'completed' => __('Completed'), 'inspected' => __('Inspected')] as $val => $lbl)
             <option value="{{ $val }}" @selected(request('status') === $val)>{{ $lbl }}</option>
             @endforeach
         </select>
         <select name="priority" class="form-input w-auto text-sm" onchange="this.form.submit()">
-            <option value="">All Priorities</option>
-            @foreach(['urgent' => 'Urgent', 'high' => 'High', 'normal' => 'Normal'] as $val => $lbl)
+            <option value="">{{ __('All Priorities') }}</option>
+            @foreach(['urgent' => __('Urgent'), 'high' => __('High'), 'normal' => __('Normal')] as $val => $lbl)
             <option value="{{ $val }}" @selected(request('priority') === $val)>{{ $lbl }}</option>
             @endforeach
         </select>
         @if(request()->hasAny(['status', 'priority']))
-        <a href="{{ route('receptionist.housekeeping.index') }}" class="btn-ghost btn-sm">Clear</a>
+        <a href="{{ route('receptionist.housekeeping.index') }}" class="btn-ghost btn-sm">{{ __('Clear') }}</a>
         @endif
     </form>
 
@@ -53,7 +53,7 @@
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
         </svg>
-        Create Task
+        {{ __('Create Task') }}
     </button>
 </div>
 
@@ -63,14 +63,14 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Room</th>
-                    <th>Type</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Assigned To</th>
-                    <th>Timing</th>
-                    <th>Notes</th>
-                    <th class="w-40">Actions</th>
+                    <th>{{ __('Room') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th>{{ __('Priority') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Assigned To') }}</th>
+                    <th>{{ __('Timing') }}</th>
+                    <th>{{ __('Notes') }}</th>
+                    <th class="w-40">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -121,9 +121,9 @@
                     {{-- Timing --}}
                     <td class="text-xs text-slate-400">
                         @if($task->completed_at)
-                            Done {{ $task->completed_at->diffForHumans() }}
+                            {{ __('Done') }} {{ $task->completed_at->diffForHumans() }}
                         @elseif($task->started_at)
-                            Started {{ $task->started_at->diffForHumans() }}
+                            {{ __('Started') }} {{ $task->started_at->diffForHumans() }}
                         @else
                             {{ $task->created_at->diffForHumans() }}
                         @endif
@@ -142,11 +142,11 @@
                                     @csrf @method('PATCH')
                                     <input type="hidden" name="action" value="start">
                                     <button class="rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-2.5 py-1.5 transition">
-                                        Start
+                                        {{ __('Start') }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('receptionist.housekeeping.destroy', $task) }}"
-                                      onsubmit="return confirm('Remove this task?')">
+                                      onsubmit="return confirm('{{ __('Remove this task?') }}')">
                                     @csrf @method('DELETE')
                                     <button class="rounded-lg border border-slate-300 dark:border-slate-600 text-slate-500 text-xs font-semibold px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
                                         ✕
@@ -157,7 +157,7 @@
                                     @csrf @method('PATCH')
                                     <input type="hidden" name="action" value="complete">
                                     <button class="rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-2.5 py-1.5 transition">
-                                        Done
+                                        {{ __('Done') }}
                                     </button>
                                 </form>
                             @elseif($task->status === 'completed')
@@ -165,11 +165,11 @@
                                     @csrf @method('PATCH')
                                     <input type="hidden" name="action" value="inspect">
                                     <button class="rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold px-2.5 py-1.5 transition">
-                                        Inspect ✓
+                                        {{ __('Inspect') }} ✓
                                     </button>
                                 </form>
                             @else
-                                <span class="text-xs text-slate-400 italic">Complete</span>
+                                <span class="text-xs text-slate-400 italic">{{ __('Complete') }}</span>
                             @endif
                         </div>
                     </td>
@@ -180,8 +180,8 @@
                         <svg class="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                         </svg>
-                        <p class="text-slate-500 font-medium">No housekeeping tasks found.</p>
-                        <p class="text-slate-400 text-sm mt-1">Tasks are auto-created on guest check-out, or you can create one manually.</p>
+                        <p class="text-slate-500 font-medium">{{ __('No tasks found.') }}</p>
+                        <p class="text-slate-400 text-sm mt-1">{{ __('Tasks are auto-created on guest check-out, or you can create one manually.') }}</p>
                     </td>
                 </tr>
                 @endforelse
@@ -208,7 +208,7 @@
     <div class="relative w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl p-6 z-10"
          @click.stop>
         <div class="flex items-center justify-between mb-5">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Create Housekeeping Task</h3>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ __('Create Housekeeping Task') }}</h3>
             <button @click="open = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -219,39 +219,39 @@
         <form method="POST" action="{{ route('receptionist.housekeeping.store') }}" class="space-y-4">
             @csrf
             <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Room</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ __('Room') }}</label>
                 <select name="room_id" class="form-input w-full" required>
-                    <option value="">Select room…</option>
+                    <option value="">{{ __('Select room…') }}</option>
                     @foreach($rooms as $room)
-                    <option value="{{ $room->id }}">Room {{ $room->room_number }}</option>
+                    <option value="{{ $room->id }}">{{ __('Room') }} {{ $room->room_number }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Task Type</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ __('Task Type') }}</label>
                 <select name="type" class="form-input w-full" required>
-                    <option value="routine_cleaning">Routine Cleaning</option>
-                    <option value="checkout_cleaning">Checkout Cleaning</option>
-                    <option value="deep_clean">Deep Clean</option>
-                    <option value="turndown">Turndown</option>
+                    <option value="routine_cleaning">{{ __('Routine Cleaning') }}</option>
+                    <option value="checkout_cleaning">{{ __('Checkout Cleaning') }}</option>
+                    <option value="deep_clean">{{ __('Deep Clean') }}</option>
+                    <option value="turndown">{{ __('Turndown') }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Priority</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ __('Priority') }}</label>
                 <select name="priority" class="form-input w-full" required>
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
+                    <option value="normal">{{ __('Normal') }}</option>
+                    <option value="high">{{ __('High') }}</option>
+                    <option value="urgent">{{ __('Urgent') }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes (optional)</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ __('Notes (optional)') }}</label>
                 <textarea name="notes" rows="2" class="form-input w-full resize-none"
-                          placeholder="Any special instructions…"></textarea>
+                          placeholder="{{ __('Any special instructions…') }}"></textarea>
             </div>
             <div class="flex gap-3 pt-1">
-                <button type="submit" class="flex-1 btn-primary">Create Task</button>
-                <button type="button" @click="open = false" class="flex-1 btn-ghost">Cancel</button>
+                <button type="submit" class="flex-1 btn-primary">{{ __('Create Task') }}</button>
+                <button type="button" @click="open = false" class="flex-1 btn-ghost">{{ __('Cancel') }}</button>
             </div>
         </form>
     </div>

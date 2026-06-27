@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Welcome') — {{ config('app.name') }}</title>
+    <title>@yield('title', __('Welcome')) — {{ config('app.name') }}</title>
     <script>if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -28,17 +28,17 @@
                 <span class="text-3xl font-bold text-white">{{ config('app.name') }}</span>
             </a>
 
-            <p class="text-xl font-semibold text-white/90 mb-3">Your Perfect Stay Awaits</p>
+            <p class="text-xl font-semibold text-white/90 mb-3">{{ __('Your Perfect Stay Awaits') }}</p>
             <p class="text-slate-300 max-w-xs">
-                Discover and book world-class hotels at the best prices. From boutique gems to luxury resorts.
+                {{ __('Discover and book world-class hotels at the best prices. From boutique gems to luxury resorts.') }}
             </p>
 
             {{-- Feature list --}}
             <div class="mt-10 space-y-4 text-left">
                 @foreach([
-                    ['Best Price Guarantee', 'We match any lower price you find.'],
-                    ['Free Cancellation', 'Flexible cancellation on most bookings.'],
-                    ['24/7 Support', 'Our team is here whenever you need help.'],
+                    [__('Best Price Guarantee'), __('We match any lower price you find.')],
+                    [__('Free Cancellation'), __('Flexible cancellation on most bookings.')],
+                    [__('24/7 Support'), __('Our team is here whenever you need help.')],
                 ] as [$title, $desc])
                 <div class="flex items-start gap-3">
                     <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/20 mt-0.5">

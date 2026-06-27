@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $hotel->name . ' — Book Your Stay')
+@section('title', $hotel->name . ' — ' . __('Book Your Stay'))
 
 @section('content')
 @php
@@ -80,7 +80,7 @@
                     <span class="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-0.5 text-sm backdrop-blur">
                         <svg class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                         <strong>{{ number_format($avgRating, 1) }}</strong>
-                        <span class="text-white/70">({{ $reviewCount }} {{ Str::plural('review', $reviewCount) }})</span>
+                        <span class="text-white/70">({{ $reviewCount }} {{ Str::plural(__('review'), $reviewCount) }})</span>
                     </span>
                     @endif
                 </div>
@@ -101,16 +101,16 @@
                 <div class="mt-5 flex flex-wrap gap-3">
                     <span class="flex items-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-1.5 text-sm">
                         <svg class="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        Check-in: <strong>{{ $hotel->check_in_time ?? '14:00' }}</strong>
+                        {{ __('Check-in') }}: <strong>{{ $hotel->check_in_time ?? '14:00' }}</strong>
                     </span>
                     <span class="flex items-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-1.5 text-sm">
                         <svg class="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        Check-out: <strong>{{ $hotel->check_out_time ?? '11:00' }}</strong>
+                        {{ __('Check-out') }}: <strong>{{ $hotel->check_out_time ?? '11:00' }}</strong>
                     </span>
                     @if($hotel->total_rooms)
                     <span class="flex items-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-1.5 text-sm">
                         <svg class="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                        {{ $hotel->total_rooms }} Rooms
+                        {{ $hotel->total_rooms }} {{ __('Rooms') }}
                     </span>
                     @endif
                 </div>
@@ -127,7 +127,7 @@
                          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
-                    {{ auth()->user()->hasFavorited($hotel->id) ? 'Saved' : 'Save' }}
+                    {{ auth()->user()->hasFavorited($hotel->id) ? __('Saved') : __('Save') }}
                 </button>
             </form>
             @endauth
@@ -137,23 +137,23 @@
         <div class="mt-6 rounded-2xl border border-white/20 bg-black/40 backdrop-blur-md p-4 sm:p-5">
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-widest text-white/60 mb-1.5">Check-in</label>
+                    <label class="block text-xs font-semibold uppercase tracking-widest text-white/60 mb-1.5">{{ __('Check-in') }}</label>
                     <input type="date" x-model="checkIn" @change="calcNights()"
                            min="{{ now()->addDay()->toDateString() }}"
                            class="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-widest text-white/60 mb-1.5">Check-out</label>
+                    <label class="block text-xs font-semibold uppercase tracking-widest text-white/60 mb-1.5">{{ __('Check-out') }}</label>
                     <input type="date" x-model="checkOut" @change="calcNights()"
                            :min="checkIn || '{{ now()->addDays(2)->toDateString() }}'"
                            class="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-widest text-white/60 mb-1.5">Guests</label>
+                    <label class="block text-xs font-semibold uppercase tracking-widest text-white/60 mb-1.5">{{ __('Guests') }}</label>
                     <select x-model="guests"
                             class="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-400">
                         @for($g = 1; $g <= 10; $g++)
-                        <option value="{{ $g }}" class="text-slate-900">{{ $g }} {{ $g === 1 ? 'Guest' : 'Guests' }}</option>
+                        <option value="{{ $g }}" class="text-slate-900">{{ $g }} {{ $g === 1 ? __('Guest') : __('Guests') }}</option>
                         @endfor
                     </select>
                 </div>
@@ -163,9 +163,9 @@
                             class="flex items-center justify-center gap-2 w-full rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-2.5 text-sm font-bold text-slate-900 transition shadow-lg">
                         <svg x-show="!loading" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         <svg x-show="loading" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                        <span x-text="loading ? 'Searching…' : 'Search Rooms'"></span>
+                        <span x-text="loading ? '{{ __('Searching…') }}' : '{{ __('Search Rooms') }}'"></span>
                     </button>
-                    <p x-show="nights > 0" class="mt-1.5 text-center text-xs text-white/60" x-text="nights + ' night' + (nights !== 1 ? 's' : '')"></p>
+                    <p x-show="nights > 0" class="mt-1.5 text-center text-xs text-white/60" x-text="nights + ' {{ __('night') }}' + (nights !== 1 ? 's' : '')"></p>
                 </div>
             </div>
         </div>
@@ -179,7 +179,7 @@
 <nav class="sticky top-[61px] z-30 border-b border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-sm">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex gap-1 overflow-x-auto scrollbar-none py-1">
-            @foreach(['overview' => 'Overview', 'rooms' => 'Rooms', 'amenities' => 'Amenities', 'gallery' => 'Gallery', 'reviews' => 'Reviews', 'contact' => 'Contact'] as $key => $label)
+            @foreach(['overview' => __('Overview'), 'rooms' => __('Rooms'), 'amenities' => __('Amenities'), 'gallery' => __('Gallery'), 'reviews' => __('Reviews'), 'contact' => __('Contact')] as $key => $label)
             <button @click="scrollTo('{{ $key }}')"
                     :class="activeSection === '{{ $key }}'
                         ? 'text-navy dark:text-amber-400 border-b-2 border-navy dark:border-amber-400'
@@ -203,13 +203,13 @@
         {{-- Description --}}
         <div class="lg:col-span-2 space-y-8">
             <div>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">About {{ $hotel->name }}</h2>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">{{ __('About') }} {{ $hotel->name }}</h2>
                 @if($hotel->description)
                     <p class="text-base leading-relaxed text-slate-600 dark:text-slate-300">{{ $hotel->description }}</p>
                 @elseif($hotel->short_description)
                     <p class="text-base leading-relaxed text-slate-600 dark:text-slate-300">{{ $hotel->short_description }}</p>
                 @else
-                    <p class="text-slate-400 italic">No description provided.</p>
+                    <p class="text-slate-400 italic">{{ __('No description provided.') }}</p>
                 @endif
             </div>
 
@@ -217,19 +217,19 @@
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div class="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 p-4 text-center">
                     <p class="text-2xl font-extrabold text-amber-600 dark:text-amber-400">{{ $hotel->star_rating ?? '—' }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Star Rating</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Star Rating') }}</p>
                 </div>
                 <div class="rounded-2xl bg-navy/5 dark:bg-navy/20 border border-navy/10 dark:border-navy/30 p-4 text-center">
                     <p class="text-2xl font-extrabold text-navy dark:text-navy-light">{{ $reviewCount ?: '—' }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Guest Reviews</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Guest Reviews') }}</p>
                 </div>
                 <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 p-4 text-center">
                     <p class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ $hotel->roomTypes->count() }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Room Types</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Room Types') }}</p>
                 </div>
                 <div class="rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 p-4 text-center">
                     <p class="text-2xl font-extrabold text-rose-500 dark:text-rose-400">{{ $hotel->amenities->count() }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Amenities</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Amenities') }}</p>
                 </div>
             </div>
 
@@ -238,7 +238,7 @@
             <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5">
                 <h3 class="flex items-center gap-2 font-semibold text-slate-900 dark:text-white mb-2">
                     <svg class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Cancellation Policy
+                    {{ __('Cancellation Policy') }}
                 </h3>
                 <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{{ $hotel->cancellation_policy }}</p>
             </div>
@@ -249,14 +249,14 @@
         <div class="space-y-4">
             <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden shadow-sm">
                 <div class="px-5 py-4 bg-slate-50 dark:bg-slate-700/50">
-                    <h3 class="font-bold text-slate-900 dark:text-white">Hotel Details</h3>
+                    <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Hotel Details') }}</h3>
                 </div>
                 @foreach([
-                    ['icon'=>'clock', 'label'=>'Check-in',  'value'=>($hotel->check_in_time  ?? '14:00')],
-                    ['icon'=>'clock', 'label'=>'Check-out', 'value'=>($hotel->check_out_time ?? '11:00')],
-                    ['icon'=>'phone', 'label'=>'Phone',     'value'=>$hotel->phone],
-                    ['icon'=>'mail',  'label'=>'Email',     'value'=>$hotel->email],
-                    ['icon'=>'globe', 'label'=>'Website',   'value'=>$hotel->website],
+                    ['icon'=>'clock', 'label'=>__('Check-in'),  'value'=>($hotel->check_in_time  ?? '14:00')],
+                    ['icon'=>'clock', 'label'=>__('Check-out'), 'value'=>($hotel->check_out_time ?? '11:00')],
+                    ['icon'=>'phone', 'label'=>__('Phone'),     'value'=>$hotel->phone],
+                    ['icon'=>'mail',  'label'=>__('Email'),     'value'=>$hotel->email],
+                    ['icon'=>'globe', 'label'=>__('Website'),   'value'=>$hotel->website],
                 ] as $d)
                 @if(!empty($d['value']))
                 <div class="flex items-center gap-3 px-5 py-3.5">
@@ -301,28 +301,28 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-                <span x-show="!searched">Our Rooms</span>
+                <span x-show="!searched">{{ __('Our Rooms') }}</span>
                 <span x-show="searched" x-cloak>
-                    Available Rooms
-                    <span class="ml-2 text-base font-normal text-slate-500" x-text="'(' + checkIn + ' → ' + checkOut + ', ' + nights + ' night' + (nights !== 1 ? 's' : '') + ')'"></span>
+                    {{ __('Available Rooms') }}
+                    <span class="ml-2 text-base font-normal text-slate-500" x-text="'(' + checkIn + ' → ' + checkOut + ', ' + nights + ' {{ __('night') }}' + (nights !== 1 ? 's' : '') + ')'"></span>
                 </span>
             </h2>
             <p x-show="!searched" class="mt-1 text-slate-500 dark:text-slate-400 text-sm">
-                Select dates above to check real-time availability and pricing.
+                {{ __('Select dates above to check real-time availability and pricing.') }}
             </p>
             <p x-show="searched && availableRooms.length === 0 && unavailableRooms.length === 0" x-cloak
                class="mt-1 text-rose-500 text-sm font-medium">
-                No rooms configured for these dates — try different dates.
+                {{ __('No rooms configured for these dates — try different dates.') }}
             </p>
             <p x-show="searched && availableRooms.length === 0 && unavailableRooms.length > 0" x-cloak
                class="mt-1 text-amber-600 dark:text-amber-400 text-sm font-medium">
-                All rooms are fully booked for these dates. See below for when each type becomes available again.
+                {{ __('All rooms are fully booked for these dates. See below for when each type becomes available again.') }}
             </p>
         </div>
         <button x-show="searched" x-cloak @click="resetSearch()"
                 class="flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            Clear search
+            {{ __('Clear search') }}
         </button>
     </div>
 
@@ -344,11 +344,11 @@
                 {{-- Price badge --}}
                 <div class="absolute top-3 right-3 rounded-xl bg-navy/90 backdrop-blur px-3 py-1.5 text-white">
                     <span class="text-lg font-extrabold">${{ number_format($rt->base_price, 0) }}</span>
-                    <span class="text-xs opacity-80">/night</span>
+                    <span class="text-xs opacity-80">/{{ __('night') }}</span>
                 </div>
                 @if($rt->view_type)
                 <div class="absolute top-3 left-3 rounded-lg bg-black/50 backdrop-blur px-2.5 py-1 text-xs font-medium text-white">
-                    {{ ucfirst($rt->view_type) }} View
+                    {{ ucfirst($rt->view_type) }} {{ __('View') }}
                 </div>
                 @endif
             </div>
@@ -359,11 +359,11 @@
                 <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
                     <span class="flex items-center gap-1">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                        {{ $rt->beds_count }} {{ Str::plural('bed', $rt->beds_count) }} · {{ ucfirst($rt->bed_type) }}
+                        {{ $rt->beds_count }} {{ Str::plural(__('bed'), $rt->beds_count) }} · {{ ucfirst($rt->bed_type) }}
                     </span>
                     <span class="flex items-center gap-1">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        Up to {{ $rt->max_guests }} {{ Str::plural('guest', $rt->max_guests) }}
+                        {{ __('Up to') }} {{ $rt->max_guests }} {{ Str::plural(__('guest'), $rt->max_guests) }}
                     </span>
                     @if($rt->size_sqm)
                     <span class="flex items-center gap-1">
@@ -379,7 +379,7 @@
                     <span class="rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-0.5 text-xs text-slate-600 dark:text-slate-300">{{ $a->name }}</span>
                     @endforeach
                     @if($rt->amenities->count() > 4)
-                    <span class="rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-0.5 text-xs text-slate-500">+{{ $rt->amenities->count() - 4 }} more</span>
+                    <span class="rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-0.5 text-xs text-slate-500">+{{ $rt->amenities->count() - 4 }} {{ __('more') }}</span>
                     @endif
                 </div>
                 @endif
@@ -391,11 +391,11 @@
                 <div class="mt-4 flex gap-2">
                     <a href="{{ route('hotels.room.show', [$hotel, $rt]) }}"
                        class="flex-1 text-center rounded-xl border border-navy dark:border-amber-400 px-4 py-2.5 text-sm font-semibold text-navy dark:text-amber-400 hover:bg-navy hover:text-white dark:hover:bg-amber-400 dark:hover:text-slate-900 transition">
-                        View Details
+                        {{ __('View Details') }}
                     </a>
                     <button @click="checkIn = checkIn; scrollTo('rooms'); $nextTick(() => scrollToSearch())"
                             class="rounded-xl bg-navy hover:bg-navy/90 dark:bg-amber-400 dark:hover:bg-amber-300 dark:text-slate-900 px-4 py-2.5 text-sm font-bold text-white transition">
-                        Book
+                        {{ __('Book') }}
                     </button>
                 </div>
             </div>
@@ -403,7 +403,7 @@
         @empty
         <div class="col-span-full py-12 text-center text-slate-400">
             <svg class="mx-auto h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            No room types configured yet.
+            {{ __('No room types configured yet.') }}
         </div>
         @endforelse
     </div>
@@ -419,15 +419,15 @@
                     <svg x-show="!room.image" class="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     <div class="absolute top-3 right-3 rounded-xl bg-navy/90 text-white px-3 py-1.5 backdrop-blur">
                         <span class="text-lg font-extrabold" x-text="'$' + room.nightly_rate"></span>
-                        <span class="text-xs opacity-80">/night</span>
+                        <span class="text-xs opacity-80">/{{ __('night') }}</span>
                     </div>
                 </div>
                 <div class="p-5">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="room.name"></h3>
-                    <p class="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold" x-text="room.available_count + ' room' + (room.available_count !== 1 ? 's' : '') + ' left'"></p>
+                    <p class="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold" x-text="room.available_count + ' {{ __('room') }}' + (room.available_count !== 1 ? 's' : '') + ' {{ __('left') }}'"></p>
                     <div class="mt-3 rounded-xl bg-slate-50 dark:bg-slate-700 p-3 flex justify-between items-center">
                         <div>
-                            <p class="text-xs text-slate-500">Total for <span x-text="nights"></span> night<span x-show="nights !== 1">s</span></p>
+                            <p class="text-xs text-slate-500">{{ __('Total for') }} <span x-text="nights"></span> {{ __('night') }}<span x-show="nights !== 1">s</span></p>
                             <p class="text-xl font-extrabold text-navy dark:text-amber-400" x-text="'$' + (room.nightly_rate * nights).toLocaleString()"></p>
                         </div>
                         @auth
@@ -438,12 +438,12 @@
                             <input type="hidden" name="check_out" :value="checkOut">
                             <input type="hidden" name="guests" :value="guests">
                             <button type="submit" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-sm px-5 py-2.5 transition shadow">
-                                Reserve
+                                {{ __('Reserve') }}
                             </button>
                         </form>
                         @else
                         <a href="{{ route('login') }}" class="rounded-xl bg-navy dark:bg-amber-400 text-white dark:text-slate-900 font-bold text-sm px-5 py-2.5 hover:opacity-90 transition">
-                            Sign in
+                            {{ __('Sign in') }}
                         </a>
                         @endauth
                     </div>
@@ -454,8 +454,8 @@
         <template x-if="searched && availableRooms.length === 0 && unavailableRooms.length === 0">
             <div class="col-span-full py-16 text-center">
                 <svg class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p class="text-lg font-semibold text-slate-700 dark:text-slate-300">No rooms available</p>
-                <p class="mt-1 text-sm text-slate-500">Try different dates or fewer guests.</p>
+                <p class="text-lg font-semibold text-slate-700 dark:text-slate-300">{{ __('No rooms available') }}</p>
+                <p class="mt-1 text-sm text-slate-500">{{ __('Try different dates or fewer guests.') }}</p>
             </div>
         </template>
     </div>
@@ -466,7 +466,7 @@
             <svg class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
-            Fully booked for your dates
+            {{ __('Fully booked for your dates') }}
         </h3>
         <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             <template x-for="room in unavailableRooms" :key="room.id">
@@ -482,7 +482,7 @@
                         </svg>
                         <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <span class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow-lg tracking-wide">
-                                Fully Booked
+                                {{ __('Fully Booked') }}
                             </span>
                         </div>
                     </div>
@@ -490,7 +490,7 @@
                     <div class="p-5">
                         <h3 class="text-base font-bold text-slate-900 dark:text-white" x-text="room.name"></h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1"
-                           x-text="room.max_guests + ' guests max · ' + room.bed_type"></p>
+                           x-text="room.max_guests + ' {{ __('guests max') }} · ' + room.bed_type"></p>
 
                         {{-- Next available notice --}}
                         <div class="mt-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 p-3">
@@ -500,19 +500,19 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
                                     <div>
-                                        <p class="text-xs font-semibold text-amber-700 dark:text-amber-400">Next available from</p>
+                                        <p class="text-xs font-semibold text-amber-700 dark:text-amber-400">{{ __('Next available from') }}</p>
                                         <p class="text-sm font-bold text-amber-800 dark:text-amber-300"
                                            x-text="formatDate(room.next_available)"></p>
                                         <button @click="checkIn = room.next_available; calcNights(); scrollToHero()"
                                                 class="mt-2 text-xs font-semibold text-navy dark:text-amber-400 hover:underline">
-                                            Search from this date →
+                                            {{ __('Search from this date') }} →
                                         </button>
                                     </div>
                                 </div>
                             </template>
                             <template x-if="!room.next_available">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 italic">
-                                    Contact the hotel for availability on these dates.
+                                    {{ __('Contact the hotel for availability on these dates.') }}
                                 </p>
                             </template>
                         </div>
@@ -528,7 +528,7 @@
 ════════════════════════════════════════════════════════ --}}
 @if($hotel->amenities->isNotEmpty())
 <section id="sec-amenities" class="py-14 border-t border-slate-100 dark:border-slate-800 scroll-mt-32">
-    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">What's Included</h2>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">{{ __("What's Included") }}</h2>
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         @foreach($hotel->amenities as $amenity)
         <div class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3.5 hover:border-navy/30 dark:hover:border-amber-400/30 transition group">
@@ -550,15 +550,15 @@
 @if($hotel->images->count() > 0)
 <section id="sec-gallery" class="py-14 border-t border-slate-100 dark:border-slate-800 scroll-mt-32">
     <div class="flex items-end justify-between mb-8">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Photo Gallery</h2>
-        <span class="text-sm text-slate-500">{{ $hotel->images->count() }} photos</span>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ __('Photo Gallery') }}</h2>
+        <span class="text-sm text-slate-500">{{ $hotel->images->count() }} {{ __('photos') }}</span>
     </div>
 
     <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         @foreach($hotel->images as $idx => $img)
         <button @click="openLightbox({{ $idx }})"
                 class="group relative overflow-hidden rounded-2xl bg-slate-200 dark:bg-slate-700 aspect-square">
-            <img src="{{ $img->url }}" alt="Hotel photo {{ $idx + 1 }}"
+            <img src="{{ $img->url }}" alt="{{ __('Hotel photo') }} {{ $idx + 1 }}"
                  class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500">
             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all duration-300">
                 <svg class="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -566,7 +566,7 @@
                 </svg>
             </div>
             @if($idx === 0)
-            <div class="absolute top-2 left-2 rounded-lg bg-black/50 backdrop-blur px-2 py-0.5 text-xs font-medium text-white">Cover</div>
+            <div class="absolute top-2 left-2 rounded-lg bg-black/50 backdrop-blur px-2 py-0.5 text-xs font-medium text-white">{{ __('Cover') }}</div>
             @endif
         </button>
         @endforeach
@@ -598,7 +598,7 @@
      REVIEWS
 ════════════════════════════════════════════════════════ --}}
 <section id="sec-reviews" class="py-14 border-t border-slate-100 dark:border-slate-800 scroll-mt-32">
-    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Guest Reviews</h2>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">{{ __('Guest Reviews') }}</h2>
 
     @if($hotel->approvedReviews->isNotEmpty())
     <div class="grid gap-8 lg:grid-cols-3">
@@ -612,7 +612,7 @@
                      fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                 @endfor
             </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $reviewCount }} {{ Str::plural(__('review'), $reviewCount) }}</p>
 
             <div class="mt-5 space-y-2">
                 @foreach([5,4,3,2,1] as $star)
@@ -639,7 +639,7 @@
                             {{ strtoupper(substr($review->user->name ?? 'G', 0, 1)) }}
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $review->user->name ?? 'Guest' }}</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $review->user->name ?? __('Guest') }}</p>
                             <p class="text-xs text-slate-400">{{ $review->created_at->format('M Y') }}</p>
                         </div>
                     </div>
@@ -661,7 +661,7 @@
     @else
     <div class="py-16 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
         <svg class="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-        <p class="text-slate-500 dark:text-slate-400">No reviews yet. Be the first to stay and share your experience!</p>
+        <p class="text-slate-500 dark:text-slate-400">{{ __('No reviews yet. Be the first to stay and share your experience!') }}</p>
     </div>
     @endif
 </section>
@@ -670,7 +670,7 @@
      CONTACT / LOCATION
 ════════════════════════════════════════════════════════ --}}
 <section id="sec-contact" class="py-14 border-t border-slate-100 dark:border-slate-800 scroll-mt-32">
-    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Location & Contact</h2>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">{{ __('Location & Contact') }}</h2>
 
     <div class="grid gap-8 lg:grid-cols-2">
 
@@ -696,7 +696,7 @@
                    target="_blank" rel="noopener"
                    class="inline-flex items-center gap-2 rounded-xl bg-navy dark:bg-amber-400 px-5 py-2.5 text-sm font-semibold text-white dark:text-slate-900 hover:opacity-90 transition">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    Get Directions
+                    {{ __('Get Directions') }}
                 </a>
             </div>
             @endif
@@ -705,14 +705,14 @@
         {{-- Contact details + quick booking CTA --}}
         <div class="space-y-5">
             <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 space-y-4 shadow-sm">
-                <h3 class="font-bold text-slate-900 dark:text-white">Reach Us</h3>
+                <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Reach Us') }}</h3>
 
                 <div class="flex items-start gap-3">
                     <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-navy dark:text-amber-400">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Address</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ __('Address') }}</p>
                         <p class="text-sm text-slate-800 dark:text-white font-medium">{{ $hotel->address }}</p>
                         <p class="text-sm text-slate-500">{{ $hotel->city }}@if($hotel->state), {{ $hotel->state }}@endif, {{ $hotel->country }}</p>
                     </div>
@@ -724,7 +724,7 @@
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Phone</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ __('Phone') }}</p>
                         <a href="tel:{{ $hotel->phone }}" class="text-sm font-semibold text-navy dark:text-amber-400 hover:underline">{{ $hotel->phone }}</a>
                     </div>
                 </div>
@@ -736,7 +736,7 @@
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Email</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ __('Email') }}</p>
                         <a href="mailto:{{ $hotel->email }}" class="text-sm font-semibold text-navy dark:text-amber-400 hover:underline">{{ $hotel->email }}</a>
                     </div>
                 </div>
@@ -748,7 +748,7 @@
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Website</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ __('Website') }}</p>
                         <a href="{{ $hotel->website }}" target="_blank" class="text-sm font-semibold text-navy dark:text-amber-400 hover:underline">{{ $hotel->website }}</a>
                     </div>
                 </div>
@@ -757,15 +757,15 @@
 
             {{-- Final booking CTA card --}}
             <div class="rounded-2xl bg-gradient-to-br from-navy to-slate-700 p-6 text-white shadow-xl">
-                <h3 class="text-lg font-bold mb-1">Ready to book?</h3>
-                <p class="text-sm text-white/70 mb-4">Use the search above or click below to explore available rooms.</p>
+                <h3 class="text-lg font-bold mb-1">{{ __('Ready to book?') }}</h3>
+                <p class="text-sm text-white/70 mb-4">{{ __('Use the search above or click below to explore available rooms.') }}</p>
                 <button @click="scrollTo('rooms')"
                         class="w-full rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold py-3 text-sm transition shadow">
-                    View Available Rooms →
+                    {{ __('View Available Rooms') }} →
                 </button>
                 @guest
                 <p class="mt-3 text-xs text-white/50 text-center">
-                    <a href="{{ route('register') }}" class="underline hover:text-white">Create an account</a> to save your booking
+                    <a href="{{ route('register') }}" class="underline hover:text-white">{{ __('Create an account') }}</a> {{ __('to save your booking') }}
                 </p>
                 @endguest
             </div>

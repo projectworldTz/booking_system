@@ -1,11 +1,11 @@
 @extends('layouts.auth')
-@section('title', 'Sign In')
+@section('title', __('Sign In'))
 
 @section('content')
-<h2 class="text-3xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white">{{ __('Welcome back') }}</h2>
 <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-    Don't have an account?
-    <a href="{{ route('register') }}" class="font-medium text-navy hover:text-navy-light dark:text-navy-light">Sign up free</a>
+    {{ __("Don't have an account?") }}
+    <a href="{{ route('register') }}" class="font-medium text-navy hover:text-navy-light dark:text-navy-light">{{ __('Sign up free') }}</a>
 </p>
 
 @if(session('status'))
@@ -21,7 +21,7 @@
     @csrf
 
     <div>
-        <label for="email" class="form-label">Email address</label>
+        <label for="email" class="form-label">{{ __('Email address') }}</label>
         <input type="email" id="email" name="email" value="{{ old('email') }}"
                autocomplete="email" required autofocus
                class="form-input @error('email') border-rose-500 @enderror"
@@ -32,7 +32,7 @@
     </div>
 
     <div>
-        <label for="password" class="form-label">Password</label>
+        <label for="password" class="form-label">{{ __('Password') }}</label>
         <input type="password" id="password" name="password"
                autocomplete="current-password" required
                class="form-input @error('password') border-rose-500 @enderror"
@@ -45,15 +45,15 @@
     <div class="flex items-center justify-between">
         <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
             <input type="checkbox" name="remember" class="rounded border-slate-300 text-navy">
-            Remember me
+            {{ __('Remember me') }}
         </label>
         <a href="{{ route('password.request') }}" class="text-sm font-medium text-navy hover:text-navy-light dark:text-navy-light">
-            Forgot password?
+            {{ __('Forgot password?') }}
         </a>
     </div>
 
     <button type="submit" class="btn-primary w-full btn-lg">
-        Sign In
+        {{ __('Sign In') }}
     </button>
 </form>
 @endsection

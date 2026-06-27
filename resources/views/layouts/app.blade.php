@@ -239,10 +239,13 @@
             </div>
         </div>
         <div class="mt-8 border-t border-white/10 pt-6 text-center text-xs text-slate-400">
-            © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+            © {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
         </div>
     </div>
 </footer>
+
+{{-- AI Concierge Chat Widget (hotel context injected when $hotel is in scope) --}}
+@include('components.chat-widget', ['hotel' => $hotel ?? null])
 
 @stack('scripts')
 </body>

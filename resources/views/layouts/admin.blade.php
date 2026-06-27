@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') — {{ config('app.name') }} Admin</title>
+    <title>@yield('title', __('Admin')) — {{ config('app.name') }} {{ __('Admin') }}</title>
     <script>if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
@@ -176,8 +176,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
-                You are impersonating <strong class="underline">{{ auth()->user()->name }}</strong>.
-                All actions you take are real and will be audit-logged.
+                {{ __('You are impersonating') }} <strong class="underline">{{ auth()->user()->name }}</strong>.
+                {{ __('All actions you take are real and will be audit-logged.') }}
             </div>
             <form method="DELETE" action="{{ route('admin.impersonate.stop') }}"
                   onsubmit="this.method='POST'; this.querySelector('[name=_method]').value='DELETE';">
@@ -185,7 +185,7 @@
                 <input type="hidden" name="_method" value="DELETE">
                 <button type="submit"
                         class="rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1 text-xs font-bold text-white transition">
-                    Stop Impersonating ×
+                    {{ __('Stop Impersonating') }} ×
                 </button>
             </form>
         </div>

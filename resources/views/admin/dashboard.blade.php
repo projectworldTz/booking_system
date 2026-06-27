@@ -1,6 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Platform Dashboard')
-@section('page-title', 'Platform Dashboard')
+@section('title', __('Platform Dashboard'))
+@section('page-title', __('Platform Dashboard'))
 
 @section('content')
 
@@ -10,54 +10,54 @@
     {{-- Hotels --}}
     <div class="stat-card">
         <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Hotels</p>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ __('Total Hotels') }}</p>
             <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
         </div>
         <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ $platformStats['hotels']['total'] ?? 0 }}</p>
         <div class="mt-2 flex gap-3 text-xs">
-            <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ $platformStats['hotels']['active'] ?? 0 }} active</span>
-            <span class="text-amber-600 dark:text-amber-400">{{ $platformStats['hotels']['pending'] ?? 0 }} pending</span>
-            <span class="text-rose-500">{{ $platformStats['hotels']['suspended'] ?? 0 }} suspended</span>
+            <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ $platformStats['hotels']['active'] ?? 0 }} {{ __('active') }}</span>
+            <span class="text-amber-600 dark:text-amber-400">{{ $platformStats['hotels']['pending'] ?? 0 }} {{ __('pending') }}</span>
+            <span class="text-rose-500">{{ $platformStats['hotels']['suspended'] ?? 0 }} {{ __('suspended') }}</span>
         </div>
     </div>
 
     {{-- Owners --}}
     <div class="stat-card">
         <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Hotel Owners</p>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ __('Hotel Owners') }}</p>
             <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
         </div>
         <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ $platformStats['total_owners'] }}</p>
-        <p class="mt-2 text-xs text-slate-500">{{ $platformStats['total_users'] }} total registered users</p>
+        <p class="mt-2 text-xs text-slate-500">{{ $platformStats['total_users'] }} {{ __('total registered users') }}</p>
     </div>
 
     {{-- Bookings --}}
     <div class="stat-card">
         <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Bookings</p>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ __('Total Bookings') }}</p>
             <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
         </div>
         <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ number_format($platformStats['total_bookings']) }}</p>
-        <p class="mt-2 text-xs text-slate-500">across all hotels</p>
+        <p class="mt-2 text-xs text-slate-500">{{ __('across all hotels') }}</p>
     </div>
 
     {{-- Revenue --}}
     <div class="stat-card">
         <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Platform Revenue</p>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ __('Platform Revenue') }}</p>
             <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
         </div>
         <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">${{ number_format($platformStats['total_revenue'], 0) }}</p>
         <p class="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            ${{ number_format($platformStats['revenue_month'], 0) }} this month
+            ${{ number_format($platformStats['revenue_month'], 0) }} {{ __('this month') }}
         </p>
     </div>
 
@@ -69,8 +69,8 @@
     {{-- Revenue trend chart --}}
     <div class="lg:col-span-2 card p-5">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-slate-900 dark:text-white">Platform Revenue — Last 12 Months</h3>
-            <a href="{{ route('admin.reports.revenue') }}" class="btn-ghost btn-sm">Full Report →</a>
+            <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Platform Revenue — Last 12 Months') }}</h3>
+            <a href="{{ route('admin.reports.revenue') }}" class="btn-ghost btn-sm">{{ __('Full Report') }} →</a>
         </div>
         <div class="h-56">
             <canvas id="revenueChart"></canvas>
@@ -79,14 +79,14 @@
 
     {{-- Hotel status distribution --}}
     <div class="card p-5">
-        <h3 class="font-bold text-slate-900 dark:text-white mb-4">Hotel Status</h3>
+        <h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ __('Hotel Status') }}</h3>
         <div class="space-y-3">
             @php
                 $total = max(1, $platformStats['hotels']['total']);
                 $statuses = [
-                    ['label' => 'Active',    'count' => $platformStats['hotels']['active']    ?? 0, 'color' => 'bg-emerald-500'],
-                    ['label' => 'Pending',   'count' => $platformStats['hotels']['pending']   ?? 0, 'color' => 'bg-amber-400'],
-                    ['label' => 'Suspended', 'count' => $platformStats['hotels']['suspended'] ?? 0, 'color' => 'bg-rose-500'],
+                    ['label' => __('Active'),    'count' => $platformStats['hotels']['active']    ?? 0, 'color' => 'bg-emerald-500'],
+                    ['label' => __('Pending'),   'count' => $platformStats['hotels']['pending']   ?? 0, 'color' => 'bg-amber-400'],
+                    ['label' => __('Suspended'), 'count' => $platformStats['hotels']['suspended'] ?? 0, 'color' => 'bg-rose-500'],
                 ];
             @endphp
             @foreach($statuses as $s)
@@ -104,7 +104,7 @@
         </div>
 
         <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
-            <a href="{{ route('admin.hotels.index') }}" class="w-full btn-outline btn-sm text-center block">Manage Hotels</a>
+            <a href="{{ route('admin.hotels.index') }}" class="w-full btn-outline btn-sm text-center block">{{ __('Manage Hotels') }}</a>
         </div>
     </div>
 
@@ -117,14 +117,14 @@
     <div class="card">
         <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
             <div class="flex items-center gap-2">
-                <h3 class="font-bold text-slate-900 dark:text-white">Pending Approvals</h3>
+                <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Pending Approvals') }}</h3>
                 @if($pendingHotels->isNotEmpty())
                     <span class="rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold px-2 py-0.5">
                         {{ $pendingHotels->count() }}
                     </span>
                 @endif
             </div>
-            <a href="{{ route('admin.hotels.index', ['status' => 'pending']) }}" class="btn-ghost btn-sm">View All</a>
+            <a href="{{ route('admin.hotels.index', ['status' => 'pending']) }}" class="btn-ghost btn-sm">{{ __('View All') }}</a>
         </div>
 
         @if($pendingHotels->isEmpty())
@@ -132,7 +132,7 @@
                 <svg class="mx-auto h-10 w-10 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                All caught up — no pending hotels.
+                {{ __('All caught up — no pending hotels.') }}
             </div>
         @else
         <div class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -142,10 +142,10 @@
                     <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ $h->name }}</p>
                     <p class="text-xs text-slate-500 truncate">
                         {{ $h->city }}, {{ $h->country }} &middot;
-                        <span class="text-slate-400">{{ $h->owner->name ?? 'Unknown owner' }}</span>
+                        <span class="text-slate-400">{{ $h->owner->name ?? __('Unknown owner') }}</span>
                     </p>
                 </div>
-                <a href="{{ route('admin.hotels.show', $h) }}" class="ml-3 btn-primary btn-sm shrink-0">Review</a>
+                <a href="{{ route('admin.hotels.show', $h) }}" class="ml-3 btn-primary btn-sm shrink-0">{{ __('Review') }}</a>
             </div>
             @endforeach
         </div>

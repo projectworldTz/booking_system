@@ -1,6 +1,6 @@
 @extends('layouts.owner')
-@section('title', 'Analytics — ' . $hotel->name)
-@section('page-title', 'Advanced Analytics')
+@section('title', __('Analytics') . ' — ' . $hotel->name)
+@section('page-title', __('Advanced Analytics'))
 
 @push('head')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -12,10 +12,10 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ $hotel->name }}</p>
-        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Performance Analytics</h2>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ __('Performance Analytics') }}</h2>
     </div>
     <div class="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-1 shadow-sm">
-        @foreach([30 => 'Last 30 Days', 90 => 'Last 3 Months', 365 => 'Last 12 Months'] as $p => $label)
+        @foreach([30 => __('Last 30 Days'), 90 => __('Last 3 Months'), 365 => __('Last 12 Months')] as $p => $label)
         <a href="{{ route('owner.analytics.index', ['hotel' => $hotel, 'period' => $p]) }}"
            class="rounded-lg px-3 py-1.5 text-sm font-medium transition
                   {{ $period == $p
@@ -55,10 +55,10 @@
             @else
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             @endif
-            {{ abs($kpi['change']) }}% vs prev. period
+            {{ abs($kpi['change']) }}% {{ __('vs prev. period') }}
         </p>
         @else
-        <p class="mt-1.5 text-xs text-slate-400">No previous data</p>
+        <p class="mt-1.5 text-xs text-slate-400">{{ __('No previous data') }}</p>
         @endif
     </div>
     @endforeach
@@ -69,7 +69,7 @@
 
     {{-- Revenue trend (2/3 width) --}}
     <div class="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5">
-        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Revenue Trend</h3>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('Revenue Trend') }}</h3>
         <div class="relative h-64">
             <canvas id="revenueChart"></canvas>
         </div>
@@ -77,7 +77,7 @@
 
     {{-- Booking status doughnut (1/3 width) --}}
     <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5">
-        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Booking Status</h3>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('Booking Status') }}</h3>
         <div class="relative h-48">
             <canvas id="statusChart"></canvas>
         </div>
@@ -105,16 +105,16 @@
     {{-- Room type table (2/3 width) --}}
     <div class="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
         <div class="p-5 border-b border-slate-100 dark:border-slate-700">
-            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Room Type Performance</h3>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ __('Room Type Performance') }}</h3>
         </div>
         <table class="w-full text-sm">
             <thead class="bg-slate-50 dark:bg-slate-700/50">
                 <tr>
-                    <th class="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Room Type</th>
-                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Bookings</th>
-                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Occupancy</th>
-                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">ADR</th>
-                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Revenue</th>
+                    <th class="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('Room Type') }}</th>
+                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('Bookings') }}</th>
+                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('Occupancy') }}</th>
+                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('ADR') }}</th>
+                    <th class="px-4 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('Revenue') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -122,7 +122,7 @@
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                     <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">
                         {{ $rt['name'] }}
-                        <span class="ml-1 text-xs text-slate-400">({{ $rt['rooms'] }} rooms)</span>
+                        <span class="ml-1 text-xs text-slate-400">({{ $rt['rooms'] }} {{ __('rooms') }})</span>
                     </td>
                     <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{{ $rt['bookings'] }}</td>
                     <td class="px-4 py-3 text-right">
@@ -138,7 +138,7 @@
                     <td class="px-4 py-3 text-right font-semibold text-slate-900 dark:text-white">${{ number_format($rt['revenue'], 0) }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">No booking data for this period.</td></tr>
+                <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">{{ __('No booking data for this period.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -149,12 +149,12 @@
 
         {{-- Cancellation rate card --}}
         <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5">
-            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">Cancellation Rate</h3>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">{{ __('Cancellation Rate') }}</h3>
             <div class="flex items-end gap-3">
                 <p class="text-4xl font-bold {{ $cancelRate > 20 ? 'text-rose-500' : ($cancelRate > 10 ? 'text-amber-500' : 'text-emerald-500') }}">
                     {{ $cancelRate }}%
                 </p>
-                <p class="text-xs text-slate-400 mb-1 leading-snug">of all<br>bookings</p>
+                <p class="text-xs text-slate-400 mb-1 leading-snug">{{ __('of all') }}<br>{{ __('bookings') }}</p>
             </div>
             <div class="mt-2 w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
                 <div class="h-2 rounded-full {{ $cancelRate > 20 ? 'bg-rose-500' : ($cancelRate > 10 ? 'bg-amber-400' : 'bg-emerald-500') }}"
@@ -164,7 +164,7 @@
 
         {{-- Busiest days card --}}
         <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5">
-            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">Busiest Check-in Days</h3>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">{{ __('Busiest Check-in Days') }}</h3>
             @php $maxDay = $busyDays->max() ?: 1; @endphp
             <div class="space-y-2">
                 @forelse($busyDays as $day => $count)
@@ -177,7 +177,7 @@
                     <span class="w-6 text-right font-semibold text-slate-700 dark:text-slate-200">{{ $count }}</span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400">No data available.</p>
+                <p class="text-xs text-slate-400">{{ __('No data available.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -187,7 +187,7 @@
 
 {{-- ── Bookings volume bar chart ────────────────────────────────────────────── --}}
 <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5">
-    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Bookings Volume</h3>
+    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('Bookings Volume') }}</h3>
     <div class="relative h-48">
         <canvas id="bookingsChart"></canvas>
     </div>

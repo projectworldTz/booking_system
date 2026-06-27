@@ -1,10 +1,10 @@
 @extends('layouts.auth')
-@section('title', 'Forgot Password')
+@section('title', __('Forgot Password'))
 
 @section('content')
-<h2 class="text-3xl font-bold text-slate-900 dark:text-white">Forgot your password?</h2>
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white">{{ __('Forgot your password?') }}</h2>
 <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-    Enter your email and we'll send you a link to reset it.
+    {{ __("Enter your email and we'll send you a link to reset it.") }}
 </p>
 
 @if(session('status'))
@@ -20,7 +20,7 @@
     @csrf
 
     <div>
-        <label for="email" class="form-label">Email address</label>
+        <label for="email" class="form-label">{{ __('Email address') }}</label>
         <input type="email" id="email" name="email" value="{{ old('email') }}"
                autocomplete="email" required autofocus
                class="form-input @error('email') border-rose-500 @enderror"
@@ -31,12 +31,12 @@
     </div>
 
     <button type="submit" class="btn-primary w-full btn-lg">
-        Send Reset Link
+        {{ __('Send Reset Link') }}
     </button>
 </form>
 
 <p class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-    Remember your password?
-    <a href="{{ route('login') }}" class="font-medium text-navy hover:text-navy-light dark:text-navy-light">Sign in</a>
+    {{ __('Remember your password?') }}
+    <a href="{{ route('login') }}" class="font-medium text-navy hover:text-navy-light dark:text-navy-light">{{ __('Sign in') }}</a>
 </p>
 @endsection

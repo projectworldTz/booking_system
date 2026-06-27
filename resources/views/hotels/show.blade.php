@@ -6,7 +6,7 @@
 
     {{-- Breadcrumb --}}
     <nav class="mb-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-        <a href="{{ route('hotels.index') }}" class="hover:text-navy dark:hover:text-navy-light">Hotels</a>
+        <a href="{{ route('hotels.index') }}" class="hover:text-navy dark:hover:text-navy-light">{{ __('Hotels') }}</a>
         <span>/</span>
         <span class="text-slate-900 dark:text-white truncate">{{ $hotel->name }}</span>
     </nav>
@@ -19,7 +19,7 @@
             <div x-data="gallery()" class="relative">
                 @if($hotel->images->isNotEmpty())
                     <div class="overflow-hidden rounded-2xl">
-                        <img :src="images[current]" :alt="'Hotel image ' + (current + 1)"
+                        <img :src="images[current]" :alt="'{{ __('Hotel image') }} ' + (current + 1)"
                              class="h-72 w-full object-cover sm:h-96">
                     </div>
                     @if($hotel->images->count() > 1)
@@ -69,7 +69,7 @@
                     <div class="text-right">
                         @if($hotel->average_rating)
                             <div class="text-3xl font-bold text-navy dark:text-navy-light">{{ number_format($hotel->average_rating, 1) }}</div>
-                            <div class="text-xs text-slate-500">out of 5</div>
+                            <div class="text-xs text-slate-500">{{ __('out of 5') }}</div>
                         @endif
                         @auth
                         <form method="POST" action="{{ route('favorites.toggle', $hotel) }}" class="mt-2">
@@ -79,7 +79,7 @@
                                 <svg class="h-4 w-4" fill="{{ auth()->user()->hasFavorited($hotel->id) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
-                                {{ auth()->user()->hasFavorited($hotel->id) ? 'Saved' : 'Save' }}
+                                {{ auth()->user()->hasFavorited($hotel->id) ? __('Saved') : __('Save') }}
                             </button>
                         </form>
                         @endauth
@@ -93,22 +93,22 @@
                 {{-- Info grid --}}
                 <div class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <div class="text-center rounded-xl bg-slate-50 dark:bg-slate-700/50 p-3">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Check-in</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Check-in') }}</p>
                         <p class="font-bold text-slate-900 dark:text-white">{{ $hotel->check_in_time ?? '14:00' }}</p>
                     </div>
                     <div class="text-center rounded-xl bg-slate-50 dark:bg-slate-700/50 p-3">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Check-out</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Check-out') }}</p>
                         <p class="font-bold text-slate-900 dark:text-white">{{ $hotel->check_out_time ?? '11:00' }}</p>
                     </div>
                     @if($hotel->phone)
                     <div class="text-center rounded-xl bg-slate-50 dark:bg-slate-700/50 p-3">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Phone</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Phone') }}</p>
                         <p class="font-bold text-slate-900 dark:text-white text-sm">{{ $hotel->phone }}</p>
                     </div>
                     @endif
                     @if($hotel->email)
                     <div class="text-center rounded-xl bg-slate-50 dark:bg-slate-700/50 p-3">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Email</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Email') }}</p>
                         <p class="font-bold text-slate-900 dark:text-white text-sm truncate">{{ $hotel->email }}</p>
                     </div>
                     @endif
@@ -118,7 +118,7 @@
             {{-- Amenities --}}
             @if($hotel->amenities->isNotEmpty())
             <div class="card p-6">
-                <h2 class="section-title mb-4">Amenities</h2>
+                <h2 class="section-title mb-4">{{ __('Amenities') }}</h2>
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     @foreach($hotel->amenities as $amenity)
                     <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -135,7 +135,7 @@
             {{-- Room types --}}
             @if($hotel->roomTypes->isNotEmpty())
             <div class="card p-6">
-                <h2 class="section-title mb-4">Room Types</h2>
+                <h2 class="section-title mb-4">{{ __('Room Types') }}</h2>
                 <div class="space-y-4">
                     @foreach($hotel->roomTypes as $rt)
                     <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-navy/30 dark:hover:border-navy-light/30 transition">
@@ -145,9 +145,9 @@
                                 <div class="mt-1 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
                                     <span>{{ $rt->bed_type }}</span>
                                     <span>·</span>
-                                    <span>{{ $rt->beds_count }} {{ Str::plural('bed', $rt->beds_count) }}</span>
+                                    <span>{{ $rt->beds_count }} {{ Str::plural(__('bed'), $rt->beds_count) }}</span>
                                     <span>·</span>
-                                    <span>Up to {{ $rt->max_guests }} {{ Str::plural('guest', $rt->max_guests) }}</span>
+                                    <span>{{ __('Up to') }} {{ $rt->max_guests }} {{ Str::plural(__('guest'), $rt->max_guests) }}</span>
                                     @if($rt->size_sqm)<span>· {{ $rt->size_sqm }} m²</span>@endif
                                 </div>
                                 @if($rt->amenities->isNotEmpty())
@@ -164,9 +164,9 @@
                                 <div class="text-2xl font-bold text-navy dark:text-navy-light">
                                     ${{ number_format($rt->base_price, 0) }}
                                 </div>
-                                <div class="text-xs text-slate-500">per night</div>
+                                <div class="text-xs text-slate-500">{{ __('per night') }}</div>
                                 <a href="{{ route('hotels.room.show', [$hotel, $rt]) }}"
-                                   class="btn-primary btn-sm mt-2">View Room</a>
+                                   class="btn-primary btn-sm mt-2">{{ __('View Room') }}</a>
                             </div>
                         </div>
                     </div>
@@ -179,7 +179,7 @@
             @if($hotel->approvedReviews->isNotEmpty())
             <div class="card p-6">
                 <h2 class="section-title mb-4">
-                    Guest Reviews
+                    {{ __('Guest Reviews') }}
                     <span class="ml-2 text-base font-normal text-slate-500">({{ $hotel->approvedReviews->count() }})</span>
                 </h2>
                 <div class="space-y-4">
@@ -190,7 +190,7 @@
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-navy/10 dark:bg-navy/30 text-sm font-bold text-navy dark:text-navy-light">
                                     {{ strtoupper(substr($review->user->name ?? 'G', 0, 1)) }}
                                 </div>
-                                <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ $review->user->name ?? 'Guest' }}</span>
+                                <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ $review->user->name ?? __('Guest') }}</span>
                             </div>
                             <div class="flex text-gold text-sm">
                                 @for($i = 1; $i <= $review->rating; $i++) ★ @endfor
@@ -211,27 +211,27 @@
         {{-- ── Sidebar: Availability checker ── --}}
         <aside class="space-y-4">
             <div class="card p-5 sticky top-20" x-data="availabilityChecker('{{ route('hotels.availability', $hotel) }}')">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Check Availability</h3>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">{{ __('Check Availability') }}</h3>
 
                 <div class="space-y-3">
                     <div>
-                        <label class="form-label">Check-in</label>
+                        <label class="form-label">{{ __('Check-in') }}</label>
                         <input type="date" x-model="checkIn" class="form-input"
                                min="{{ now()->toDateString() }}">
                     </div>
                     <div>
-                        <label class="form-label">Check-out</label>
+                        <label class="form-label">{{ __('Check-out') }}</label>
                         <input type="date" x-model="checkOut" class="form-input"
                                :min="checkIn || '{{ now()->addDay()->toDateString() }}'">
                     </div>
                     <div>
-                        <label class="form-label">Guests</label>
+                        <label class="form-label">{{ __('Guests') }}</label>
                         <input type="number" x-model="guests" min="1" max="20" class="form-input">
                     </div>
                     <button @click="check()" :disabled="loading || !checkIn || !checkOut"
                             class="btn-primary w-full">
-                        <span x-show="!loading">Check Availability</span>
-                        <span x-show="loading">Checking…</span>
+                        <span x-show="!loading">{{ __('Check Availability') }}</span>
+                        <span x-show="loading">{{ __('Checking…') }}</span>
                     </button>
                 </div>
 
@@ -239,7 +239,7 @@
                 <div x-show="checked" class="mt-4 space-y-3">
                     <template x-if="rooms.length === 0">
                         <div class="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-3 text-sm text-rose-700 dark:text-rose-300">
-                            No rooms available for these dates.
+                            {{ __('No rooms available for these dates.') }}
                         </div>
                     </template>
                     <template x-for="room in rooms" :key="room.id">
@@ -247,10 +247,10 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-sm font-semibold text-slate-900 dark:text-white" x-text="room.name"></p>
-                                    <p class="text-xs text-slate-500" x-text="room.available_count + ' rooms left'"></p>
+                                    <p class="text-xs text-slate-500" x-text="room.available_count + ' {{ __('rooms left') }}'"></p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-bold text-navy dark:text-navy-light" x-text="'$' + room.nightly_rate + '/night'"></p>
+                                    <p class="font-bold text-navy dark:text-navy-light" x-text="'$' + room.nightly_rate + '/{{ __('night') }}'"></p>
                                 </div>
                             </div>
                             @auth
@@ -260,10 +260,10 @@
                                 <input type="hidden" name="check_in" :value="checkIn">
                                 <input type="hidden" name="check_out" :value="checkOut">
                                 <input type="hidden" name="guests" :value="guests">
-                                <button type="submit" class="btn-gold btn-sm w-full">Reserve Now</button>
+                                <button type="submit" class="btn-gold btn-sm w-full">{{ __('Reserve Now') }}</button>
                             </form>
                             @else
-                            <a href="{{ route('login') }}" class="btn-outline btn-sm w-full mt-2 block text-center">Sign in to Book</a>
+                            <a href="{{ route('login') }}" class="btn-outline btn-sm w-full mt-2 block text-center">{{ __('Sign in to Book') }}</a>
                             @endauth
                         </div>
                     </template>
@@ -272,7 +272,7 @@
 
             @if($related->isNotEmpty())
             <div class="card p-4">
-                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3">Similar Hotels</h3>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3">{{ __('Similar Hotels') }}</h3>
                 <div class="space-y-3">
                     @foreach($related as $r)
                     <a href="{{ route('hotels.show', $r) }}" class="flex items-center gap-3 group">

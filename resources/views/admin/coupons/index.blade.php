@@ -1,13 +1,13 @@
 @extends('layouts.admin')
-@section('title', 'Coupons')
-@section('page-title', 'Coupon Management')
+@section('title', __('Coupons'))
+@section('page-title', __('Coupon Management'))
 
 @section('content')
 <div class="mb-4 flex items-center justify-between">
     <p class="text-sm text-slate-500 dark:text-slate-400">
-        Platform-wide and hotel-specific discount codes.
+        {{ __('Platform-wide and hotel-specific discount codes.') }}
     </p>
-    <a href="{{ route('admin.coupons.create') }}" class="btn-primary btn-sm">+ New Coupon</a>
+    <a href="{{ route('admin.coupons.create') }}" class="btn-primary btn-sm">+ {{ __('New Coupon') }}</a>
 </div>
 
 @if(session('success'))
@@ -22,20 +22,20 @@
             <svg class="mx-auto h-10 w-10 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z"/>
             </svg>
-            <p class="font-medium">No coupons yet</p>
-            <p class="text-xs mt-1">Create your first coupon to offer discounts to guests.</p>
+            <p class="font-medium">{{ __('No coupons yet') }}</p>
+            <p class="text-xs mt-1">{{ __('Create your first coupon to offer discounts to guests.') }}</p>
         </div>
     @else
     <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Discount</th>
-                    <th>Scope</th>
-                    <th>Uses</th>
-                    <th>Expires</th>
-                    <th>Status</th>
+                    <th>{{ __('Code') }}</th>
+                    <th>{{ __('Discount') }}</th>
+                    <th>{{ __('Scope') }}</th>
+                    <th>{{ __('Uses') }}</th>
+                    <th>{{ __('Expires') }}</th>
+                    <th>{{ __('Status') }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -64,7 +64,7 @@
                             </span>
                         @else
                             <span class="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
-                                Platform-wide
+                                {{ __('Platform-wide') }}
                             </span>
                         @endif
                     </td>
@@ -82,7 +82,7 @@
                                 {{ $coupon->expires_at->format('d M Y') }}
                             </span>
                         @else
-                            <span class="text-slate-400">Never</span>
+                            <span class="text-slate-400">{{ __('Never') }}</span>
                         @endif
                     </td>
                     <td>
@@ -93,19 +93,19 @@
                                            {{ $coupon->active
                                                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400'
                                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400' }}">
-                                {{ $coupon->active ? 'Active' : 'Inactive' }}
+                                {{ $coupon->active ? __('Active') : __('Inactive') }}
                             </button>
                         </form>
                     </td>
                     <td>
                         <form method="POST" action="{{ route('admin.coupons.destroy', $coupon) }}"
                               x-data
-                              @submit.prevent="if(confirm('Delete coupon {{ $coupon->code }}?')) $el.submit()">
+                              @submit.prevent="if(confirm('{{ __('Delete coupon') }} {{ $coupon->code }}?')) $el.submit()">
                             @csrf
                             @method('DELETE')
                             <button type="submit"
                                     class="text-xs text-rose-500 hover:text-rose-700 font-medium">
-                                Delete
+                                {{ __('Delete') }}
                             </button>
                         </form>
                     </td>

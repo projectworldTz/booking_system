@@ -30,8 +30,12 @@ use App\Http\Controllers\Receptionist\BookingController as ReceptionistBookingCo
 use App\Http\Controllers\Receptionist\DashboardController as ReceptionistDashboard;
 use App\Http\Controllers\Owner\AnalyticsController as OwnerAnalyticsController;
 use App\Http\Controllers\Owner\HousekeepingController as OwnerHousekeepingController;
+use App\Http\Controllers\Owner\InventoryController as OwnerInventoryController;
 use App\Http\Controllers\Receptionist\GuestController as ReceptionistGuestController;
 use App\Http\Controllers\Receptionist\HousekeepingController as ReceptionistHousekeepingController;
+use App\Http\Controllers\Receptionist\InventoryController as ReceptionistInventoryController;
+use App\Http\Controllers\Receptionist\CancellationApprovalController as ReceptionistCancellationController;
+use App\Http\Controllers\Owner\CancellationApprovalController as OwnerCancellationController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\RoomController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +58,12 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── AI Concierge Chat ─────────────────────────────────────────────────────────
+Route::prefix('chat')->name('chat.')->middleware('throttle:30,1')->group(function () {
+    Route::post('/message', [\App\Http\Controllers\ChatController::class, 'message'])->name('message');
+    Route::post('/clear',   [\App\Http\Controllers\ChatController::class, 'clear'])->name('clear');
+});
 
 // ── Public ───────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -165,9 +175,10 @@ Route::middleware('auth')->group(function () {
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');
             Route::get('/{user}', [AdminUserController::class, 'show'])->name('show');
-            Route::post('/{user}/roles', [AdminUserController::class, 'assignRole'])->name('role.assign');
-            Route::delete('/{user}/roles/{role}', [AdminUserController::class, 'revokeRole'])->name('role.revoke');
-            Route::post('/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{user}/roles', [AdminUserController::class, 'assignRole'])->name('assign-role');
+            Route::delete('/{user}/roles/{role}', [AdminUserController::class, 'revokeRole'])->name('revoke-role');
+            Route::patch('/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('toggle-active');
+            Route::patch('/{user}/hotel-limit', [AdminUserController::class, 'updateHotelLimit'])->name('hotel-limit');
         });
 
         // Settings
@@ -206,6 +217,9 @@ Route::middleware('auth')->group(function () {
             // Room types
             Route::get('/{hotel}/room-types/create', [OwnerHotelController::class, 'createRoomType'])->name('room-types.create');
             Route::post('/{hotel}/room-types', [OwnerHotelController::class, 'storeRoomType'])->name('room-types.store');
+            Route::post('/{hotel}/room-types/{roomType}/images', [OwnerHotelController::class, 'storeRoomTypeImages'])->name('room-types.images.store');
+            Route::post('/room-type-images/{image}/set-cover', [OwnerHotelController::class, 'setCoverRoomTypeImage'])->name('room-type-images.set-cover');
+            Route::delete('/room-type-images/{image}', [OwnerHotelController::class, 'deleteRoomTypeImage'])->name('room-type-images.destroy');
 
             // Physical rooms
             Route::post('/{hotel}/room-types/{roomType}/rooms', [OwnerHotelController::class, 'storeRoom'])->name('rooms.store');
@@ -249,6 +263,21 @@ Route::middleware('auth')->group(function () {
 
         // Advanced Analytics
         Route::get('/hotels/{hotel}/analytics', [OwnerAnalyticsController::class, 'index'])->name('analytics.index');
+
+        // Emergency Cancellation Approvals
+        Route::prefix('hotels/{hotel}/cancellation-approvals')->name('cancellation-approvals.')->group(function () {
+            Route::get('/',                       [OwnerCancellationController::class, 'index'])->name('index');
+            Route::post('/{approval}/approve',    [OwnerCancellationController::class, 'approve'])->name('approve');
+            Route::post('/{approval}/deny',       [OwnerCancellationController::class, 'deny'])->name('deny');
+        });
+
+        // Inventory & Assets
+        Route::prefix('hotels/{hotel}/inventory')->name('inventory.')->group(function () {
+            Route::get('/',           [OwnerInventoryController::class, 'index'])->name('index');
+            Route::post('/',          [OwnerInventoryController::class, 'store'])->name('store');
+            Route::put('/{asset}',    [OwnerInventoryController::class, 'update'])->name('update');
+            Route::delete('/{asset}', [OwnerInventoryController::class, 'destroy'])->name('destroy');
+        });
     });
 
     // ── Hotel Staff (receptionist / manager / cashier) ───────────────────────
@@ -284,6 +313,20 @@ Route::middleware('auth')->group(function () {
             Route::patch('/{task}/status',               [ReceptionistHousekeepingController::class, 'updateStatus'])->name('status');
             Route::post('/{task}/assign',                [ReceptionistHousekeepingController::class, 'assign'])->name('assign');
             Route::delete('/{task}',                     [ReceptionistHousekeepingController::class, 'destroy'])->name('destroy');
+        });
+
+        // Inventory
+        Route::prefix('inventory')->name('inventory.')->group(function () {
+            Route::get('/',          [ReceptionistInventoryController::class, 'index'])->name('index');
+            Route::post('/',         [ReceptionistInventoryController::class, 'store'])->name('store');
+            Route::put('/{asset}',   [ReceptionistInventoryController::class, 'update'])->name('update');
+        });
+
+        // Emergency Cancellation Approvals
+        Route::prefix('cancellation-approvals')->name('cancellation-approvals.')->group(function () {
+            Route::get('/',                                      [ReceptionistCancellationController::class, 'index'])->name('index');
+            Route::post('/bookings/{booking}/request',           [ReceptionistCancellationController::class, 'request'])->name('request');
+            Route::post('/{approval}/execute',                   [ReceptionistCancellationController::class, 'execute'])->name('execute');
         });
     });
 });

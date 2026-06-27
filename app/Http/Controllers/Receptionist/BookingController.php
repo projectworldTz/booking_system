@@ -233,9 +233,12 @@ class BookingController extends Controller
         $hotel = $request->attributes->get('assigned_hotel');
         abort_if($booking->hotel_id !== $hotel->id, 403);
 
-        $booking->loadMissing(['user', 'rooms.roomType', 'hotel', 'payment']);
+        $booking->loadMissing(['user', 'rooms.roomType', 'rooms.room', 'hotel', 'payment', 'invoice', 'cancellationApproval']);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('booking'));
+        $invoice = $booking->invoice;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('booking', 'invoice'))
+            ->setPaper('a4', 'portrait');
 
         return $pdf->download("invoice-{$booking->booking_number}.pdf");
     }
