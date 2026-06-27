@@ -14,9 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\HandleImpersonation::class,
         ]);
         $middleware->alias([
-            'receptionist' => \App\Http\Middleware\ReceptionistMiddleware::class,
+            'receptionist'  => \App\Http\Middleware\ReceptionistMiddleware::class,
+            'hotel.staff'   => \App\Http\Middleware\EnsureHotelStaff::class,
+            'hotel.setup'   => \App\Http\Middleware\EnsureHotelOwnerHasHotel::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

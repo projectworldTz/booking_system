@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\Feature;
 use App\Events\BookingCancelled;
 use App\Models\Booking;
 use App\Models\BookingRoom;
 use App\Models\Coupon;
 use App\Models\Hotel;
+use App\Models\HousekeepingTask;
 use App\Models\ReservationCart;
 use App\Models\ReservationCartItem;
 use App\Models\Room;
@@ -67,7 +69,11 @@ class BookingService
         $room = $this->roomRepository->firstAvailableRoom($roomType, $checkIn, $checkOut);
 
         if (! $room) {
-            throw new \RuntimeException('No rooms are available for the selected dates.');
+            $nextFree = $this->availabilityRepository->nextAvailableDateForType($roomType, $checkIn);
+            $hint = $nextFree
+                ? ' Rooms are next available from ' . \Carbon\Carbon::parse($nextFree)->format('M j, Y') . '.'
+                : '';
+            throw new \RuntimeException("All {$roomType->name} rooms are fully booked for those dates.{$hint}");
         }
 
         // Calculate pricing
@@ -154,11 +160,17 @@ class BookingService
         }
 
         return DB::transaction(function () use ($user, $cart, $checkoutData) {
-            // 1. Refresh pricing and confirm rooms are still available
+            // 1. Pessimistic-lock each room row, then verify availability.
+            //    lockForUpdate() holds a row-level write lock for the duration
+            //    of the transaction, so two concurrent checkouts for the same
+            //    room cannot both pass the availability check.
             foreach ($cart->items as $item) {
-                if (! $item->room->isAvailableForDates($item->check_in, $item->check_out)) {
+                $room = Room::where('id', $item->room_id)->lockForUpdate()->firstOrFail();
+
+                if (! $room->isAvailableForDates($item->check_in, $item->check_out)) {
                     throw new \RuntimeException(
-                        "Room {$item->room->room_number} is no longer available for your selected dates. Please choose different dates."
+                        "Sorry, {$room->room_number} is no longer available for your selected dates — " .
+                        "someone else just booked it. Please choose different dates or another room."
                     );
                 }
                 $item->refreshPricing();
@@ -261,6 +273,21 @@ class BookingService
             'status'         => Booking::STATUS_CHECKED_OUT,
             'checked_out_at' => now(),
         ]);
+
+        // Auto-create housekeeping tasks for each room if the hotel has the feature
+        $booking->loadMissing(['hotel', 'rooms.room']);
+        if ($booking->hotel->hasFeature(Feature::HOUSEKEEPING)) {
+            foreach ($booking->rooms as $bookingRoom) {
+                HousekeepingTask::create([
+                    'hotel_id'   => $booking->hotel_id,
+                    'room_id'    => $bookingRoom->room_id,
+                    'booking_id' => $booking->id,
+                    'type'       => HousekeepingTask::TYPE_CHECKOUT,
+                    'status'     => HousekeepingTask::STATUS_PENDING,
+                    'priority'   => HousekeepingTask::PRIORITY_HIGH,
+                ]);
+            }
+        }
 
         return $booking;
     }

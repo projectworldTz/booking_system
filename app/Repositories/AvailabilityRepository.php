@@ -5,7 +5,9 @@ namespace App\Repositories;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\RoomAvailability;
+use App\Models\RoomType;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class AvailabilityRepository
 {
@@ -70,5 +72,36 @@ class AvailabilityRepository
     public function releaseAllForBooking(Booking $booking): void
     {
         RoomAvailability::where('booking_id', $booking->id)->delete();
+    }
+
+    /**
+     * Find the earliest date a room of this type becomes free again,
+     * starting from $fromDate. Returns null if no active bookings exist.
+     *
+     * Strategy: join room_availability → bookings and find the minimum
+     * check_out date of any active booking that blocks a room of this type
+     * on or after $fromDate. That check_out date is when the first room
+     * becomes free again.
+     */
+    public function nextAvailableDateForType(RoomType $roomType, string $fromDate): ?string
+    {
+        $roomIds = Room::where('room_type_id', $roomType->id)
+            ->where('status', 'available')
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($roomIds)) {
+            return null;
+        }
+
+        $minCheckout = DB::table('room_availability')
+            ->join('bookings', 'room_availability.booking_id', '=', 'bookings.id')
+            ->whereIn('room_availability.room_id', $roomIds)
+            ->whereIn('room_availability.status', ['booked', 'blocked'])
+            ->where('room_availability.date', '>=', $fromDate)
+            ->whereNotIn('bookings.status', [Booking::STATUS_CANCELLED])
+            ->min('bookings.check_out');
+
+        return $minCheckout;
     }
 }

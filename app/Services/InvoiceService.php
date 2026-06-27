@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
 class InvoiceService
@@ -19,16 +20,18 @@ class InvoiceService
             return $existing;
         }
 
-        return Invoice::create([
-            'booking_id'     => $booking->id,
-            'invoice_number' => Invoice::generateInvoiceNumber(),
-            'subtotal'       => $booking->sub_total,
-            'tax_total'      => $booking->tax_total,
-            'discount_total' => $booking->discount_total,
-            'grand_total'    => $booking->grand_total,
-            'currency'       => $booking->currency,
-            'status'         => 'draft',
-        ]);
+        return DB::transaction(function () use ($booking) {
+            return Invoice::create([
+                'booking_id'     => $booking->id,
+                'invoice_number' => Invoice::generateInvoiceNumber(),
+                'subtotal'       => $booking->sub_total,
+                'tax_total'      => $booking->tax_total,
+                'discount_total' => $booking->discount_total,
+                'grand_total'    => $booking->grand_total,
+                'currency'       => $booking->currency,
+                'status'         => 'draft',
+            ]);
+        });
     }
 
     /**

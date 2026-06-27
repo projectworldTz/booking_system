@@ -43,9 +43,7 @@ class HotelController extends Controller
             'approvedReviews.user', 'category',
         ]);
 
-        $related = $this->hotelService->getRelated($hotel, 4);
-
-        return view('hotels.show', compact('hotel', 'related'));
+        return view('hotels.public', compact('hotel'));
     }
 
     /**
@@ -63,24 +61,30 @@ class HotelController extends Controller
             (int) $request->guests
         );
 
+        $formatType = fn ($r, bool $isAvailable) => [
+            'id'              => $r['room_type']->id,
+            'name'            => $r['room_type']->name,
+            'slug'            => $r['room_type']->slug,
+            'max_guests'      => $r['room_type']->max_guests,
+            'bed_type'        => $r['room_type']->bed_type,
+            'size_sqm'        => $r['room_type']->size_sqm,
+            'available'       => $isAvailable,
+            'available_count' => $r['available_count'],
+            'nightly_rate'    => $isAvailable ? $r['pricing']['nightly_rate'] : null,
+            'nights'          => $isAvailable ? $r['pricing']['nights']        : null,
+            'total'           => $isAvailable ? $r['pricing']['subtotal']      : null,
+            'image'           => $r['room_type']->images->first()?->url,
+            'next_available'  => $r['next_available'],
+            'reason'          => $r['reason'],
+        ];
+
         return response()->json([
-            'available'  => ! empty($results),
-            'check_in'   => $request->check_in,
-            'check_out'  => $request->check_out,
-            'guests'     => $request->guests,
-            'room_types' => array_map(fn ($r) => [
-                'id'              => $r['room_type']->id,
-                'name'            => $r['room_type']->name,
-                'slug'            => $r['room_type']->slug,
-                'max_guests'      => $r['room_type']->max_guests,
-                'bed_type'        => $r['room_type']->bed_type,
-                'size_sqm'        => $r['room_type']->size_sqm,
-                'available_count' => $r['available_count'],
-                'nightly_rate'    => $r['pricing']['nightly_rate'],
-                'nights'          => $r['pricing']['nights'],
-                'total'           => $r['pricing']['subtotal'],
-                'image_url'       => $r['room_type']->featured_image_url,
-            ], $results),
+            'available'          => ! empty($results['available']),
+            'check_in'           => $request->check_in,
+            'check_out'          => $request->check_out,
+            'guests'             => $request->guests,
+            'room_types'         => array_map(fn ($r) => $formatType($r, true),  $results['available']),
+            'unavailable_types'  => array_map(fn ($r) => $formatType($r, false), $results['unavailable']),
         ]);
     }
 }

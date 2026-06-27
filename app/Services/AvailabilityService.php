@@ -60,12 +60,15 @@ class AvailabilityService
         $availableRooms = $this->roomRepository->availableRoomsForType($roomType, $checkIn, $checkOut);
 
         if ($availableRooms->isEmpty()) {
+            $nextAvailable = $this->availabilityRepository->nextAvailableDateForType($roomType, $checkIn);
+
             return [
                 'available'       => false,
                 'room'            => null,
                 'available_count' => 0,
                 'pricing'         => [],
-                'reason'          => 'No rooms are available for the selected dates.',
+                'next_available'  => $nextAvailable,
+                'reason'          => 'fully_booked',
             ];
         }
 
@@ -76,31 +79,37 @@ class AvailabilityService
             'room'            => $availableRooms->first(),
             'available_count' => $availableRooms->count(),
             'pricing'         => $pricing,
+            'next_available'  => null,
             'reason'          => null,
         ];
     }
 
     /**
-     * Return all room types for a hotel that have at least one available room
-     * for the requested stay, enriched with availability count and pricing.
+     * Return ALL room types for a hotel split into two groups:
+     *   available   — have at least one free room, with count and pricing
+     *   unavailable — fully booked for the requested dates, with next_available date
      */
     public function availableRoomTypes(Hotel $hotel, string $checkIn, string $checkOut, int $guests): array
     {
-        $roomTypes = $this->roomRepository->roomTypesForHotel($hotel);
-        $results   = [];
+        $roomTypes   = $this->roomRepository->roomTypesForHotel($hotel);
+        $available   = [];
+        $unavailable = [];
 
         foreach ($roomTypes as $roomType) {
             $check = $this->checkRoomType($hotel, $roomType, $checkIn, $checkOut, $guests);
+            $entry = array_merge(['room_type' => $roomType], $check);
 
             if ($check['available']) {
-                $results[] = array_merge(['room_type' => $roomType], $check);
+                $available[] = $entry;
+            } else {
+                $unavailable[] = $entry;
             }
         }
 
-        // Sort cheapest first
-        usort($results, fn ($a, $b) => $a['pricing']['subtotal'] <=> $b['pricing']['subtotal']);
+        // Cheapest available first
+        usort($available, fn ($a, $b) => $a['pricing']['subtotal'] <=> $b['pricing']['subtotal']);
 
-        return $results;
+        return ['available' => $available, 'unavailable' => $unavailable];
     }
 
     /**

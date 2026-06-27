@@ -1,94 +1,186 @@
 @extends('layouts.admin')
-@section('title', 'Admin Dashboard')
-@section('page-title', 'Dashboard')
+@section('title', 'Platform Dashboard')
+@section('page-title', 'Platform Dashboard')
 
 @section('content')
-{{-- Stats row --}}
+
+{{-- ── Top stat row ─────────────────────────────────────────────────────────── --}}
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-    @foreach([
-        ['Hotels',            $hotelStats['total']      ?? 0, 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
-        ['Active Bookings',   $bookingStats['active']   ?? 0, 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
-        ['Revenue (month)',   '$' . number_format($bookingStats['revenue_month'] ?? 0, 0), 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
-        ['Pending Approval',  $hotelStats['pending']    ?? 0, 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'],
-    ] as [$label, $val, $icon])
+
+    {{-- Hotels --}}
     <div class="stat-card">
         <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ $label }}</p>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Hotels</p>
             <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
         </div>
-        <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ $val }}</p>
+        <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ $platformStats['hotels']['total'] ?? 0 }}</p>
+        <div class="mt-2 flex gap-3 text-xs">
+            <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ $platformStats['hotels']['active'] ?? 0 }} active</span>
+            <span class="text-amber-600 dark:text-amber-400">{{ $platformStats['hotels']['pending'] ?? 0 }} pending</span>
+            <span class="text-rose-500">{{ $platformStats['hotels']['suspended'] ?? 0 }} suspended</span>
+        </div>
     </div>
-    @endforeach
+
+    {{-- Owners --}}
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Hotel Owners</p>
+            <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ $platformStats['total_owners'] }}</p>
+        <p class="mt-2 text-xs text-slate-500">{{ $platformStats['total_users'] }} total registered users</p>
+    </div>
+
+    {{-- Bookings --}}
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Bookings</p>
+            <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+        </div>
+        <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ number_format($platformStats['total_bookings']) }}</p>
+        <p class="mt-2 text-xs text-slate-500">across all hotels</p>
+    </div>
+
+    {{-- Revenue --}}
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Platform Revenue</p>
+            <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">${{ number_format($platformStats['total_revenue'], 0) }}</p>
+        <p class="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            ${{ number_format($platformStats['revenue_month'], 0) }} this month
+        </p>
+    </div>
+
 </div>
 
-<div class="grid gap-6 lg:grid-cols-3">
-    {{-- Revenue chart --}}
+{{-- ── Hotel status breakdown + Revenue chart ──────────────────────────────── --}}
+<div class="grid gap-6 lg:grid-cols-3 mb-6">
+
+    {{-- Revenue trend chart --}}
     <div class="lg:col-span-2 card p-5">
-        <h3 class="font-bold text-slate-900 dark:text-white mb-4">Revenue — Last 12 Months</h3>
-        <div class="h-64">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-900 dark:text-white">Platform Revenue — Last 12 Months</h3>
+            <a href="{{ route('admin.reports.revenue') }}" class="btn-ghost btn-sm">Full Report →</a>
+        </div>
+        <div class="h-56">
             <canvas id="revenueChart"></canvas>
         </div>
     </div>
 
-    {{-- Pending hotels --}}
+    {{-- Hotel status distribution --}}
+    <div class="card p-5">
+        <h3 class="font-bold text-slate-900 dark:text-white mb-4">Hotel Status</h3>
+        <div class="space-y-3">
+            @php
+                $total = max(1, $platformStats['hotels']['total']);
+                $statuses = [
+                    ['label' => 'Active',    'count' => $platformStats['hotels']['active']    ?? 0, 'color' => 'bg-emerald-500'],
+                    ['label' => 'Pending',   'count' => $platformStats['hotels']['pending']   ?? 0, 'color' => 'bg-amber-400'],
+                    ['label' => 'Suspended', 'count' => $platformStats['hotels']['suspended'] ?? 0, 'color' => 'bg-rose-500'],
+                ];
+            @endphp
+            @foreach($statuses as $s)
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-slate-600 dark:text-slate-300">{{ $s['label'] }}</span>
+                    <span class="font-semibold text-slate-900 dark:text-white">{{ $s['count'] }}</span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                    <div class="{{ $s['color'] }} h-full rounded-full transition-all"
+                         style="width: {{ round($s['count'] / $total * 100) }}%"></div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
+            <a href="{{ route('admin.hotels.index') }}" class="w-full btn-outline btn-sm text-center block">Manage Hotels</a>
+        </div>
+    </div>
+
+</div>
+
+{{-- ── Two-column lower panel ───────────────────────────────────────────────── --}}
+<div class="grid gap-6 lg:grid-cols-2">
+
+    {{-- Pending approvals --}}
     <div class="card">
         <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
-            <h3 class="font-bold text-slate-900 dark:text-white">Pending Hotels</h3>
+            <div class="flex items-center gap-2">
+                <h3 class="font-bold text-slate-900 dark:text-white">Pending Approvals</h3>
+                @if($pendingHotels->isNotEmpty())
+                    <span class="rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold px-2 py-0.5">
+                        {{ $pendingHotels->count() }}
+                    </span>
+                @endif
+            </div>
             <a href="{{ route('admin.hotels.index', ['status' => 'pending']) }}" class="btn-ghost btn-sm">View All</a>
         </div>
+
         @if($pendingHotels->isEmpty())
-            <p class="p-5 text-sm text-slate-500">No hotels pending approval.</p>
+            <div class="p-8 text-center text-slate-400 text-sm">
+                <svg class="mx-auto h-10 w-10 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                All caught up — no pending hotels.
+            </div>
         @else
         <div class="divide-y divide-slate-100 dark:divide-slate-700">
             @foreach($pendingHotels as $h)
-            <div class="flex items-center justify-between px-5 py-3">
-                <div>
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $h->name }}</p>
-                    <p class="text-xs text-slate-500">{{ $h->city }} · {{ $h->owner->name ?? 'Unknown' }}</p>
+            <div class="flex items-center justify-between px-5 py-3.5">
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ $h->name }}</p>
+                    <p class="text-xs text-slate-500 truncate">
+                        {{ $h->city }}, {{ $h->country }} &middot;
+                        <span class="text-slate-400">{{ $h->owner->name ?? 'Unknown owner' }}</span>
+                    </p>
                 </div>
-                <a href="{{ route('admin.hotels.show', $h) }}" class="btn-primary btn-sm">Review</a>
+                <a href="{{ route('admin.hotels.show', $h) }}" class="ml-3 btn-primary btn-sm shrink-0">Review</a>
             </div>
             @endforeach
         </div>
         @endif
     </div>
+
+    {{-- Recent hotel registrations --}}
+    <div class="card">
+        <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-white">Recent Hotels</h3>
+            <a href="{{ route('admin.hotels.index') }}" class="btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            @forelse($recentHotels as $h)
+            <div class="flex items-center justify-between px-5 py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    {{-- Status dot --}}
+                    <span class="h-2 w-2 rounded-full shrink-0
+                        {{ $h->status === 'active' ? 'bg-emerald-500' : ($h->status === 'suspended' ? 'bg-rose-500' : 'bg-amber-400') }}">
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $h->name }}</p>
+                        <p class="text-xs text-slate-400">{{ $h->created_at->diffForHumans() }}</p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.hotels.show', $h) }}" class="ml-3 btn-ghost btn-sm shrink-0">View</a>
+            </div>
+            @empty
+            <p class="p-5 text-sm text-slate-400">No hotels registered yet.</p>
+            @endforelse
+        </div>
+    </div>
+
 </div>
 
-{{-- Recent bookings --}}
-<div class="mt-6 card">
-    <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
-        <h3 class="font-bold text-slate-900 dark:text-white">Recent Bookings</h3>
-        <a href="{{ route('admin.bookings.index') }}" class="btn-ghost btn-sm">View All</a>
-    </div>
-    <div class="table-wrap">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Booking #</th>
-                    <th>Guest</th>
-                    <th>Hotel</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($recentBookings as $b)
-                <tr class="tr-hover">
-                    <td class="font-mono text-xs">{{ $b->booking_number }}</td>
-                    <td>{{ $b->user->name ?? 'N/A' }}</td>
-                    <td>{{ $b->hotel->name ?? 'N/A' }}</td>
-                    <td class="font-semibold">${{ number_format($b->grand_total ?? 0, 2) }}</td>
-                    <td><span class="badge badge-{{ $b->status }}">{{ ucfirst($b->status) }}</span></td>
-                    <td><a href="{{ route('admin.bookings.show', $b) }}" class="btn-ghost btn-sm">View</a></td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -96,21 +188,24 @@
 (function () {
     const revenue = @json($revenue);
     const ctx = document.getElementById('revenueChart');
-    if (!ctx) return;
+    if (!ctx || !revenue.length) return;
     new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: revenue.map(r => {
                 const d = new Date(r.year, r.month - 1);
-                return d.toLocaleString('default', { month: 'short', year: 'numeric' });
+                return d.toLocaleString('default', { month: 'short', year: '2-digit' });
             }),
             datasets: [{
                 label: 'Revenue ($)',
                 data: revenue.map(r => r.total),
-                backgroundColor: 'rgba(27, 58, 107, 0.7)',
+                backgroundColor: 'rgba(27, 58, 107, 0.1)',
                 borderColor: '#1B3A6B',
-                borderWidth: 1,
-                borderRadius: 4,
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#1B3A6B',
+                pointRadius: 3,
             }]
         },
         options: {

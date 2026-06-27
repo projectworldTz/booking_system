@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreHotelRequest;
 use App\Models\Hotel;
+use App\Services\AuditService;
 use App\Services\HotelService;
 use Illuminate\Http\Request;
 
 class HotelController extends Controller
 {
-    public function __construct(private HotelService $hotelService) {}
+    public function __construct(
+        private HotelService  $hotelService,
+        private AuditService  $auditService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -20,30 +23,27 @@ class HotelController extends Controller
         return view('admin.hotels.index', compact('hotels', 'filters'));
     }
 
-    public function show(Hotel $hotel)
-    {
-        $hotel->loadMissing([
-            'owner', 'images', 'amenities', 'roomTypes.images',
-            'category', 'approvedReviews',
-        ]);
-
-        $stats = \App\Models\Booking::where('hotel_id', $hotel->id)
-            ->selectRaw('COUNT(*) as total, SUM(grand_total) as revenue')
-            ->first();
-
-        return view('admin.hotels.show', compact('hotel', 'stats'));
-    }
-
     public function approve(Hotel $hotel)
     {
+        $oldStatus = $hotel->status;
         $this->hotelService->approve($hotel);
+
+        $this->auditService->logHotelAction('hotel.approved', $hotel, [
+            'from_status' => $oldStatus,
+            'to_status'   => 'active',
+        ]);
 
         return back()->with('success', "\"{$hotel->name}\" has been approved and is now live.");
     }
 
     public function suspend(Hotel $hotel, Request $request)
     {
-        $this->hotelService->suspend($hotel, $request->input('reason', ''));
+        $reason = $request->input('reason', '');
+        $this->hotelService->suspend($hotel, $reason);
+
+        $this->auditService->logHotelAction('hotel.suspended', $hotel, [
+            'reason' => $reason,
+        ]);
 
         return back()->with('success', "\"{$hotel->name}\" has been suspended.");
     }
@@ -51,16 +51,22 @@ class HotelController extends Controller
     public function toggleFeatured(Hotel $hotel)
     {
         $this->hotelService->toggleFeatured($hotel);
-        $state = $hotel->fresh()->featured ? 'featured' : 'unfeatured';
+        $featured = $hotel->fresh()->featured;
 
-        return back()->with('success', "\"{$hotel->name}\" is now {$state}.");
+        $this->auditService->logHotelAction('hotel.featured', $hotel, [
+            'featured' => $featured,
+        ]);
+
+        return back()->with('success', "\"{$hotel->name}\" is now " . ($featured ? 'featured' : 'unfeatured') . '.');
     }
 
     public function destroy(Hotel $hotel)
     {
+        $name = $hotel->name;
+        $this->auditService->logHotelAction('hotel.deleted', $hotel);
         $this->hotelService->delete($hotel);
 
         return redirect()->route('admin.hotels.index')
-            ->with('success', "Hotel \"{$hotel->name}\" deleted.");
+            ->with('success', "Hotel \"{$name}\" deleted.");
     }
 }

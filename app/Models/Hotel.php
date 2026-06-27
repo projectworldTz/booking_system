@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Feature;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -128,6 +129,17 @@ class Hotel extends Model
         return $this->hasMany(SeasonalPrice::class);
     }
 
+    public function hotelFeatures()
+    {
+        return $this->hasMany(HotelFeature::class);
+    }
+
+    public function activeFeatures()
+    {
+        return $this->hasMany(HotelFeature::class)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+    }
+
     // ── Scopes ────────────────────────────────────────────────────────────────
 
     public function scopeActive($query)
@@ -207,5 +219,37 @@ class Hotel extends Model
     public function isOwnedBy(User $user): bool
     {
         return $this->owner_id === $user->id;
+    }
+
+    public function hasFeature(Feature|string $feature): bool
+    {
+        $value = $feature instanceof Feature ? $feature->value : $feature;
+
+        return $this->hotelFeatures()
+            ->where('feature', $value)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->exists();
+    }
+
+    public function grantFeature(Feature|string $feature, int $grantedBy, ?string $expiresAt = null, ?string $notes = null): HotelFeature
+    {
+        $value = $feature instanceof Feature ? $feature->value : $feature;
+
+        return $this->hotelFeatures()->updateOrCreate(
+            ['feature' => $value],
+            [
+                'granted_by' => $grantedBy,
+                'granted_at' => now(),
+                'expires_at' => $expiresAt,
+                'notes'      => $notes,
+            ]
+        );
+    }
+
+    public function revokeFeature(Feature|string $feature): int
+    {
+        $value = $feature instanceof Feature ? $feature->value : $feature;
+
+        return $this->hotelFeatures()->where('feature', $value)->delete();
     }
 }

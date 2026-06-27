@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
         $superAdmin   = Role::firstOrCreate(['name' => 'super-admin'],   ['guard_name' => 'web']);
         $hotelOwner   = Role::firstOrCreate(['name' => 'hotel-owner'],   ['guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'receptionist'], ['guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'manager'],      ['guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'cashier'],      ['guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'customer'],     ['guard_name' => 'web']);
 
         // ── Permissions ───────────────────────────────────────────────────────
@@ -96,7 +98,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // ── Platform Settings ─────────────────────────────────────────────────
-        foreach ([
+        $settings = [
             'site_name'              => 'StayBook Tanzania',
             'site_email'             => 'info@staybook.co.tz',
             'currency'               => 'TZS',
@@ -104,7 +106,14 @@ class DatabaseSeeder extends Seeder
             'platform_commission'    => '10',
             'booking_expiry_minutes' => '60',
             'cancellation_policy'    => 'Free cancellation up to 24 hours before check-in. After that, the first night is non-refundable.',
-        ] as $key => $value) {
+            // Bank transfer details — seeded from .env so operators can configure without touching code
+            'bank_account_name'      => env('BANK_ACCOUNT_NAME', 'Hotel Platform Ltd'),
+            'bank_account_number'    => env('BANK_ACCOUNT_NUMBER', 'XXXX-XXXX-XXXX'),
+            'bank_name'              => env('BANK_NAME', 'National Bank'),
+            'bank_swift_code'        => env('BANK_SWIFT_CODE', 'XXXXXXXX'),
+        ];
+
+        foreach ($settings as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 

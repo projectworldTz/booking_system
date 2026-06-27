@@ -20,4 +20,19 @@ class HotelImage extends Model
     {
         return $this->belongsTo(Hotel::class);
     }
+
+    /**
+     * Always return a fully-qualified URL regardless of what is stored.
+     * Stored value may be a root-relative path (/storage/...) or a full URL.
+     */
+    public function getUrlAttribute(): string
+    {
+        $stored = $this->attributes['url'] ?? '';
+
+        if (str_starts_with($stored, 'http')) {
+            return $stored;
+        }
+
+        return asset($stored);
+    }
 }

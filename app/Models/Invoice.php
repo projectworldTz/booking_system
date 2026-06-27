@@ -61,9 +61,20 @@ class Invoice extends Model
 
     public static function generateInvoiceNumber(): string
     {
-        $year     = now()->format('Y');
-        $sequence = str_pad((static::whereYear('created_at', $year)->count() + 1), 6, '0', STR_PAD_LEFT);
+        $year   = now()->format('Y');
+        $prefix = "INV-{$year}-";
 
-        return "INV-{$year}-{$sequence}";
+        // Extract the highest existing sequence for this year and increment it.
+        // Using MAX on the numeric suffix avoids the count() race condition where
+        // two concurrent inserts both see the same count and collide on the unique key.
+        $last = static::where('invoice_number', 'like', $prefix . '%')
+            ->lockForUpdate()
+            ->max('invoice_number');
+
+        $next = $last
+            ? (int) substr($last, strlen($prefix)) + 1
+            : 1;
+
+        return $prefix . str_pad($next, 6, '0', STR_PAD_LEFT);
     }
 }

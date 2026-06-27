@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Events\BookingCreated;
 use App\Http\Requests\StoreBookingRequest;
+use App\Models\User;
 use App\Services\BookingService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
@@ -22,7 +24,9 @@ class BookingController extends Controller
      */
     public function checkout()
     {
-        $cart = $this->bookingService->getCart(auth()->user());
+        /** @var User $user */
+        $user = Auth::user();
+        $cart = $this->bookingService->getCart($user);
 
         if ($cart->items->isEmpty()) {
             return redirect()->route('hotels.index')
@@ -39,8 +43,11 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request)
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         try {
-            $booking = $this->bookingService->createFromCart(auth()->user(), $request->validated());
+            $booking = $this->bookingService->createFromCart($user, $request->validated());
         } catch (\RuntimeException $e) {
             return back()->withErrors(['booking' => $e->getMessage()]);
         }
@@ -53,7 +60,7 @@ class BookingController extends Controller
         );
 
         // Cash / bank transfer: confirm immediately, then email
-        if (\in_array($paymentMethod, ['cash', 'bank'])) {
+        if (in_array($paymentMethod, ['cash', 'bank'], true)) {
             $this->bookingService->confirm($booking);
             $booking->refresh();
             event(new BookingCreated($booking));
@@ -92,9 +99,11 @@ class BookingController extends Controller
      */
     public function show(string $bookingNumber)
     {
+        /** @var User $user */
+        $user    = Auth::user();
         $booking = $this->bookingService->findByNumber($bookingNumber);
 
-        abort_unless($booking->user_id === auth()->id() || auth()->user()->isSuperAdmin(), 403);
+        abort_unless($booking->user_id === Auth::id() || $user->isSuperAdmin(), 403);
 
         $booking->loadMissing(['hotel.images', 'rooms.roomType', 'payment', 'invoice']);
 
@@ -108,7 +117,7 @@ class BookingController extends Controller
     {
         $booking = $this->bookingService->findByNumber($bookingNumber);
 
-        abort_unless($booking->user_id === auth()->id(), 403);
+        abort_unless($booking->user_id === Auth::id(), 403);
 
         try {
             $this->bookingService->cancel($booking, $request->input('reason', ''));
@@ -125,12 +134,11 @@ class BookingController extends Controller
      */
     public function invoice(string $bookingNumber)
     {
+        /** @var User $user */
+        $user    = Auth::user();
         $booking = $this->bookingService->findByNumber($bookingNumber);
 
-        abort_unless(
-            $booking->user_id === auth()->id() || auth()->user()->isSuperAdmin(),
-            403
-        );
+        abort_unless($booking->user_id === Auth::id() || $user->isSuperAdmin(), 403);
 
         $invoice = $booking->invoice;
         abort_if(is_null($invoice), 404, 'Invoice not found.');

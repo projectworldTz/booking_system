@@ -90,6 +90,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-hotel', fn (User $user, Hotel $hotel) =>
             $user->isSuperAdmin() || $hotel->isOwnedBy($user)
         );
+        Gate::define('access-staff', fn (User $user) =>
+            $user->hasAnyRole(['receptionist', 'manager', 'cashier'])
+        );
 
         // ── Event → Listener wiring ───────────────────────────────────────────
         Event::listen(BookingCreated::class,   SendBookingConfirmationEmail::class);

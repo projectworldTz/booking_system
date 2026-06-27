@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\HotelFeatureController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\HotelController as AdminHotelController;
+use App\Http\Controllers\Admin\HotelDashboardController;
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -13,6 +17,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingCartController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HotelController;
@@ -23,7 +28,10 @@ use App\Http\Controllers\Owner\StaffController as OwnerStaffController;
 use App\Http\Controllers\Receptionist\AvailabilityController as ReceptionistAvailability;
 use App\Http\Controllers\Receptionist\BookingController as ReceptionistBookingController;
 use App\Http\Controllers\Receptionist\DashboardController as ReceptionistDashboard;
+use App\Http\Controllers\Owner\AnalyticsController as OwnerAnalyticsController;
+use App\Http\Controllers\Owner\HousekeepingController as OwnerHousekeepingController;
 use App\Http\Controllers\Receptionist\GuestController as ReceptionistGuestController;
+use App\Http\Controllers\Receptionist\HousekeepingController as ReceptionistHousekeepingController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\RoomController;
 use Illuminate\Support\Facades\Route;
@@ -54,9 +62,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
 
-// Hotel browsing
+// Hotel browsing — listing removed (SaaS: no global hotel directory)
 Route::prefix('hotels')->name('hotels.')->group(function () {
-    Route::get('/', [HotelController::class, 'index'])->name('index');
+    // Redirect the listing to home so old bookmarked URLs don't 404
+    Route::get('/', fn () => redirect()->route('home'))->name('index');
     Route::get('/{hotel}', [HotelController::class, 'show'])->name('show');
     Route::get('/{hotel}/availability', [HotelController::class, 'availability'])->name('availability');
     Route::get('/{hotel}/rooms/{roomType}', [RoomController::class, 'show'])->name('room.show');
@@ -68,8 +77,8 @@ Route::prefix('hotels')->name('hotels.')->group(function () {
 // ── Authenticated customers ───────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
-    // Customer account
-    Route::get('/dashboard', [AccountController::class, 'dashboard'])->name('dashboard');
+    // Role-based dashboard redirect — each role lands on its own area
+    Route::get('/dashboard', [DashboardController::class, 'redirect'])->name('dashboard');
     Route::prefix('account')->name('account.')->group(function () {
         Route::get('/bookings', [AccountController::class, 'bookings'])->name('bookings');
         Route::get('/bookings/{booking}', [AccountController::class, 'showBooking'])->name('booking.show');
@@ -110,15 +119,37 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:access-admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboard::class, 'index'])->name('dashboard');
 
-        // Hotels
+        // Hotels — list + moderation actions
         Route::prefix('hotels')->name('hotels.')->group(function () {
-            Route::get('/', [AdminHotelController::class, 'index'])->name('index');
-            Route::get('/{hotel}', [AdminHotelController::class, 'show'])->name('show');
+            Route::get('/',                [AdminHotelController::class,   'index'])->name('index');
             Route::post('/{hotel}/approve', [AdminHotelController::class, 'approve'])->name('approve');
             Route::post('/{hotel}/suspend', [AdminHotelController::class, 'suspend'])->name('suspend');
             Route::post('/{hotel}/featured', [AdminHotelController::class, 'toggleFeatured'])->name('featured');
-            Route::delete('/{hotel}', [AdminHotelController::class, 'destroy'])->name('destroy');
+            Route::delete('/{hotel}',       [AdminHotelController::class, 'destroy'])->name('destroy');
+
+            // Hotel management hub — overview + drill-down tabs
+            Route::get('/{hotel}',          [HotelDashboardController::class, 'show'])->name('show');
+            Route::prefix('{hotel}/hub')->name('hub.')->group(function () {
+                Route::get('/bookings', [HotelDashboardController::class, 'bookings'])->name('bookings');
+                Route::get('/revenue',  [HotelDashboardController::class, 'revenue'])->name('revenue');
+                Route::get('/rooms',    [HotelDashboardController::class, 'rooms'])->name('rooms');
+                Route::get('/staff',    [HotelDashboardController::class, 'staff'])->name('staff');
+                Route::get('/guests',   [HotelDashboardController::class, 'guests'])->name('guests');
+                Route::get('/features', [HotelDashboardController::class, 'features'])->name('features');
+            });
+            // Feature grant/revoke
+            Route::prefix('{hotel}/features')->name('features.')->group(function () {
+                Route::post('/',   [HotelFeatureController::class, 'grant'])->name('grant');
+                Route::delete('/', [HotelFeatureController::class, 'revoke'])->name('revoke');
+            });
         });
+
+        // Impersonation
+        Route::post('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
+        Route::delete('/impersonate',      [ImpersonationController::class, 'stop'])->name('impersonate.stop');
+
+        // Audit logs
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 
         // Bookings
         Route::prefix('bookings')->name('bookings.')->group(function () {
@@ -160,7 +191,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // ── Hotel Owner ───────────────────────────────────────────────────────────
-    Route::middleware('can:access-owner')->prefix('owner')->name('owner.')->group(function () {
+    Route::middleware(['can:access-owner', 'hotel.setup'])->prefix('owner')->name('owner.')->group(function () {
         Route::get('/', [OwnerDashboard::class, 'index'])->name('dashboard');
 
         // Hotel management
@@ -212,10 +243,16 @@ Route::middleware('auth')->group(function () {
             Route::post('/{booking}/check-out', [OwnerBookingController::class, 'checkOut'])->name('check-out');
             Route::post('/{booking}/cancel', [OwnerBookingController::class, 'cancel'])->name('cancel');
         });
+
+        // Housekeeping overview (read-only)
+        Route::get('/hotels/{hotel}/housekeeping', [OwnerHousekeepingController::class, 'index'])->name('housekeeping.index');
+
+        // Advanced Analytics
+        Route::get('/hotels/{hotel}/analytics', [OwnerAnalyticsController::class, 'index'])->name('analytics.index');
     });
 
-    // ── Receptionist ──────────────────────────────────────────────────────────
-    Route::middleware(['auth', 'receptionist'])->prefix('receptionist')->name('receptionist.')->group(function () {
+    // ── Hotel Staff (receptionist / manager / cashier) ───────────────────────
+    Route::middleware(['auth', 'hotel.staff'])->prefix('receptionist')->name('receptionist.')->group(function () {
         Route::get('/', [ReceptionistDashboard::class, 'index'])->name('dashboard');
 
         // Bookings
@@ -239,5 +276,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [ReceptionistGuestController::class, 'index'])->name('index');
             Route::get('/{guest}', [ReceptionistGuestController::class, 'show'])->name('show');
         });
+
+        // Housekeeping
+        Route::prefix('housekeeping')->name('housekeeping.')->group(function () {
+            Route::get('/',                              [ReceptionistHousekeepingController::class, 'index'])->name('index');
+            Route::post('/',                             [ReceptionistHousekeepingController::class, 'store'])->name('store');
+            Route::patch('/{task}/status',               [ReceptionistHousekeepingController::class, 'updateStatus'])->name('status');
+            Route::post('/{task}/assign',                [ReceptionistHousekeepingController::class, 'assign'])->name('assign');
+            Route::delete('/{task}',                     [ReceptionistHousekeepingController::class, 'destroy'])->name('destroy');
+        });
     });
 });
+

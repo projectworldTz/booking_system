@@ -85,6 +85,14 @@
                 {{ __('Reports') }}
             </a>
 
+            <a href="{{ route('admin.audit-logs.index') }}"
+               class="{{ $isAdmin('audit-logs') ? 'nav-link-active' : 'nav-link' }}">
+                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                {{ __('Audit Logs') }}
+            </a>
+
             <a href="{{ route('admin.settings.index') }}"
                class="{{ $isAdmin('settings') ? 'nav-link-active' : 'nav-link' }}">
                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -160,11 +168,40 @@
             </form>
         </header>
 
+        {{-- Impersonation banner --}}
+        @if(session()->has('impersonating_original_id'))
+        <div class="bg-amber-500 dark:bg-amber-600 px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-sm font-semibold text-white">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                You are impersonating <strong class="underline">{{ auth()->user()->name }}</strong>.
+                All actions you take are real and will be audit-logged.
+            </div>
+            <form method="DELETE" action="{{ route('admin.impersonate.stop') }}"
+                  onsubmit="this.method='POST'; this.querySelector('[name=_method]').value='DELETE';">
+                @csrf
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit"
+                        class="rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1 text-xs font-bold text-white transition">
+                    Stop Impersonating ×
+                </button>
+            </form>
+        </div>
+        @endif
+
         {{-- Flash --}}
         <div class="px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
                      class="mt-4 alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('info'))
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)"
+                     class="mt-4 rounded-xl border border-sky-200 dark:border-sky-700 bg-sky-50 dark:bg-sky-900/20 px-4 py-3 text-sm text-sky-700 dark:text-sky-300">
+                    {{ session('info') }}
+                </div>
             @endif
             @if(session('error') || $errors->any())
                 <div class="mt-4 alert-error">

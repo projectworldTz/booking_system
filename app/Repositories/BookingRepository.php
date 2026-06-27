@@ -154,4 +154,16 @@ class BookingRepository
             ->get()
             ->toArray();
     }
+
+    public function revenueByMonthForHotel(Hotel $hotel, int $months = 12): array
+    {
+        return Booking::forHotel($hotel->id)
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(grand_total) as total, COUNT(*) as bookings')
+            ->whereIn('status', [Booking::STATUS_CONFIRMED, Booking::STATUS_CHECKED_IN, Booking::STATUS_CHECKED_OUT])
+            ->where('created_at', '>=', now()->subMonths($months))
+            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->orderByRaw('YEAR(created_at), MONTH(created_at)')
+            ->get()
+            ->toArray();
+    }
 }

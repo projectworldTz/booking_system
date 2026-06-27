@@ -36,7 +36,7 @@ class StaffController extends Controller
         $data = $request->validate([
             'email'    => 'required|email|max:255',
             'name'     => 'required_without:existing_user|string|max:255',
-            'position' => 'required|in:receptionist,manager',
+            'position' => 'required|in:receptionist,manager,cashier',
         ]);
 
         // Find or create the user — track whether this is a brand-new account
@@ -50,9 +50,9 @@ class StaffController extends Controller
             ]
         );
 
-        // Assign receptionist role
-        $role = Role::where('name', 'receptionist')->first();
-        if ($role && ! $user->hasRole('receptionist')) {
+        // Assign the matching staff role dynamically
+        $role = Role::where('name', $data['position'])->first();
+        if ($role && ! $user->hasRole($data['position'])) {
             $user->roles()->syncWithoutDetaching([$role->id]);
         }
 

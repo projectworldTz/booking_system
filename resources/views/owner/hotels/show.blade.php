@@ -7,6 +7,12 @@
     <a href="{{ route('owner.hotels.index') }}" class="btn-ghost btn-sm">← My Hotels</a>
     <a href="{{ route('owner.hotels.coupons.index', $hotel) }}" class="btn-ghost btn-sm ml-auto">Coupons</a>
     <a href="{{ route('owner.hotels.staff.index', $hotel) }}" class="btn-ghost btn-sm">Staff</a>
+    @if($hotel->hasFeature('housekeeping'))
+    <a href="{{ route('owner.housekeeping.index', $hotel) }}" class="btn-ghost btn-sm">🧹 Housekeeping</a>
+    @endif
+    @if($hotel->hasFeature('advanced_analytics'))
+    <a href="{{ route('owner.analytics.index', $hotel) }}" class="btn-ghost btn-sm">📊 Analytics</a>
+    @endif
     <a href="{{ route('owner.hotels.edit', $hotel) }}" class="btn-outline btn-sm">Edit Hotel</a>
 </div>
 

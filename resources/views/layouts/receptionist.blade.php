@@ -94,6 +94,24 @@
                 </svg>
                 {{ __('Guests') }}
             </a>
+
+            @if(isset($assignedHotel) && $assignedHotel->hasFeature('housekeeping'))
+            <a href="{{ route('receptionist.housekeeping.index') }}"
+               class="{{ str_starts_with($route ?? '', 'receptionist.housekeeping') ? 'nav-link-active' : 'nav-link' }}">
+                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <span class="flex-1">{{ __('Housekeeping') }}</span>
+                @php
+                    $navHkPending = \App\Models\HousekeepingTask::forHotel($assignedHotel->id)->pending()->count();
+                @endphp
+                @if($navHkPending > 0)
+                <span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-400 px-1.5 text-[10px] font-bold text-slate-900">
+                    {{ $navHkPending > 99 ? '99+' : $navHkPending }}
+                </span>
+                @endif
+            </a>
+            @endif
         </nav>
 
         <div class="shrink-0 border-t border-white/10 p-4">
