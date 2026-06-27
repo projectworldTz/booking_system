@@ -93,6 +93,21 @@
                 {{ __('Audit Logs') }}
             </a>
 
+            {{-- Feature Requests with notification badge --}}
+            @php $pendingFeatureReqs = \App\Models\FeatureRequest::pending()->count(); @endphp
+            <a href="{{ route('admin.feature-requests.index') }}"
+               class="{{ $isAdmin('feature-requests') ? 'nav-link-active' : 'nav-link' }}">
+                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span class="flex-1">{{ __('Feature Requests') }}</span>
+                @if($pendingFeatureReqs > 0)
+                <span class="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                    {{ $pendingFeatureReqs > 9 ? '9+' : $pendingFeatureReqs }}
+                </span>
+                @endif
+            </a>
+
             <a href="{{ route('admin.settings.index') }}"
                class="{{ $isAdmin('settings') ? 'nav-link-active' : 'nav-link' }}">
                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

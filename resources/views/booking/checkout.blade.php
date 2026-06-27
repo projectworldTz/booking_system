@@ -87,7 +87,7 @@
                         <p class="text-xs text-slate-500">{{ $item->roomType->hotel->name ?? '' }}</p>
                         <div class="mt-1 flex justify-between text-xs text-slate-500">
                             <span>{{ \Carbon\Carbon::parse($item->check_in)->format('d M') }} – {{ \Carbon\Carbon::parse($item->check_out)->format('d M Y') }}</span>
-                            <span class="font-semibold">${{ number_format($item->sub_total ?? 0, 2) }}</span>
+                            <span class="font-semibold">TZS {{ number_format($item->sub_total ?? 0, 0) }}</span>
                         </div>
                     </div>
                     @endforeach
@@ -95,17 +95,17 @@
                     <div class="mt-3 border-t border-slate-100 dark:border-slate-700 pt-3 space-y-1 text-sm">
                         <div class="flex justify-between text-slate-600 dark:text-slate-300">
                             <span>{{ __('Subtotal') }}</span>
-                            <span>${{ number_format($cart->sub_total ?? 0, 2) }}</span>
+                            <span>TZS {{ number_format($cart->sub_total ?? 0, 0) }}</span>
                         </div>
                         @if(($cart->discount ?? 0) > 0)
                         <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
                             <span>{{ __('Discount') }}</span>
-                            <span>-${{ number_format($cart->discount, 2) }}</span>
+                            <span>−TZS {{ number_format($cart->discount, 0) }}</span>
                         </div>
                         @endif
                         <div class="flex justify-between font-bold text-base text-slate-900 dark:text-white pt-1">
                             <span>{{ __('Total') }}</span>
-                            <span>${{ number_format(($cart->sub_total ?? 0) - ($cart->discount ?? 0), 2) }}</span>
+                            <span>TZS {{ number_format(($cart->sub_total ?? 0) - ($cart->discount ?? 0), 0) }}</span>
                         </div>
                     </div>
 

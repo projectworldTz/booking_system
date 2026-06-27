@@ -57,7 +57,7 @@ class BookingService
      *
      * @throws \RuntimeException when room is unavailable
      */
-    public function addToCart(User $user, RoomType $roomType, string $checkIn, string $checkOut, int $guests): ReservationCartItem
+    public function addToCart(User $user, RoomType $roomType, string $checkIn, string $checkOut, int $guests, ?\App\Models\CorporateAccount $corporate = null): ReservationCartItem
     {
         // Validate dates
         $dateCheck = $this->availabilityService->validateDates($checkIn, $checkOut);
@@ -78,6 +78,13 @@ class BookingService
 
         // Calculate pricing
         $pricing = $this->pricingService->calculateForStay($roomType, $checkIn, $checkOut);
+
+        // Apply corporate discount if provided
+        if ($corporate) {
+            $discountedRate = $corporate->applyDiscount((float) $pricing['nightly_rate']);
+            $pricing['nightly_rate'] = $discountedRate;
+            $pricing['subtotal']     = $discountedRate * $pricing['nights'];
+        }
 
         // Create/refresh cart
         $cart = $this->getOrCreateCart($user);
@@ -192,12 +199,25 @@ class BookingService
             $checkOut = $cart->items->max('check_out');
             $nights   = Carbon::parse($checkIn)->diffInDays(Carbon::parse($checkOut));
 
-            // 5. Create the Booking record
+            // 5. Resolve corporate account from session (set when adding from portal)
+            $corporateAccountId = session('corporate_account_id');
+            if ($corporateAccountId) {
+                $validCorporate = \App\Models\CorporateAccount::where('id', $corporateAccountId)
+                    ->where('hotel_id', $hotel->id)
+                    ->where('is_active', true)
+                    ->first();
+                $corporateAccountId = ($validCorporate && $validCorporate->isContractActive())
+                    ? $validCorporate->id
+                    : null;
+            }
+
+            // 6. Create the Booking record
             $booking = Booking::create([
                 'booking_number'               => Booking::generateBookingNumber(),
                 'user_id'                      => $user->id,
                 'hotel_id'                     => $hotel->id,
                 'coupon_id'                    => $coupon?->id,
+                'corporate_account_id'         => $corporateAccountId,
                 'status'                       => Booking::STATUS_PENDING,
                 'check_in'                     => $checkIn,
                 'check_out'                    => $checkOut,
@@ -215,7 +235,7 @@ class BookingService
                 'cancellation_policy_snapshot' => $hotel->cancellation_policy,
             ]);
 
-            // 6. Create BookingRoom records and block dates
+            // 7. Create BookingRoom records and block dates
             foreach ($cart->items as $item) {
                 BookingRoom::create([
                     'booking_id'   => $booking->id,
@@ -237,9 +257,10 @@ class BookingService
             // 8. Create the invoice
             $this->invoiceService->generateForBooking($booking);
 
-            // 9. Clear cart
+            // 9. Clear cart and corporate session
             $cart->items()->delete();
             $cart->delete();
+            session()->forget('corporate_account_id');
 
             return $booking->fresh(['rooms.room', 'rooms.roomType', 'hotel', 'invoice']);
         });

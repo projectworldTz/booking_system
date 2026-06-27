@@ -343,7 +343,7 @@
                 @endif
                 {{-- Price badge --}}
                 <div class="absolute top-3 right-3 rounded-xl bg-navy/90 backdrop-blur px-3 py-1.5 text-white">
-                    <span class="text-lg font-extrabold">${{ number_format($rt->base_price, 0) }}</span>
+                    <span class="text-lg font-extrabold">TZS {{ number_format($rt->base_price, 0) }}</span>
                     <span class="text-xs opacity-80">/{{ __('night') }}</span>
                 </div>
                 @if($rt->view_type)

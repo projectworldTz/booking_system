@@ -162,7 +162,7 @@
                             </div>
                             <div class="text-right">
                                 <div class="text-2xl font-bold text-navy dark:text-navy-light">
-                                    ${{ number_format($rt->base_price, 0) }}
+                                    TZS {{ number_format($rt->base_price, 0) }}
                                 </div>
                                 <div class="text-xs text-slate-500">{{ __('per night') }}</div>
                                 <a href="{{ route('hotels.room.show', [$hotel, $rt]) }}"

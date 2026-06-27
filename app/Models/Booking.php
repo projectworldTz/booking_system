@@ -14,6 +14,7 @@ class Booking extends Model
         'user_id',
         'hotel_id',
         'coupon_id',
+        'corporate_account_id',
         'status',
         'check_in',
         'check_out',
@@ -78,6 +79,11 @@ class Booking extends Model
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function corporateAccount()
+    {
+        return $this->belongsTo(CorporateAccount::class);
     }
 
     public function rooms()

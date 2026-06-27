@@ -8,6 +8,17 @@ class StoreHotelRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        // <input type="time"> may submit "HH:MM:SS" — strip seconds to satisfy H:i validation
+        foreach (['check_in_time', 'check_out_time'] as $field) {
+            $val = $this->input($field);
+            if ($val && preg_match('/^\d{2}:\d{2}:\d{2}$/', $val)) {
+                $this->merge([$field => substr($val, 0, 5)]);
+            }
+        }
+    }
+
     public function rules(): array
     {
         return [

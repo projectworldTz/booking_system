@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\FeatureRequestController as AdminFeatureRequestController;
 use App\Http\Controllers\Admin\HotelFeatureController;
+use App\Http\Controllers\Owner\FeatureRequestController as OwnerFeatureRequestController;
+use App\Http\Controllers\Owner\CorporateAccountController as OwnerCorporateController;
+use App\Http\Controllers\CorporatePortalController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
@@ -84,6 +88,10 @@ Route::prefix('hotels')->name('hotels.')->group(function () {
         ->whereNumber(['year', 'month']);
 });
 
+// ── Corporate / B2B Portal (public — access via unique code) ─────────────────
+Route::get('/corporate/{hotel:slug}/{code}', [CorporatePortalController::class, 'show'])
+    ->name('corporate.portal');
+
 // ── Authenticated customers ───────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
@@ -160,6 +168,13 @@ Route::middleware('auth')->group(function () {
 
         // Audit logs
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+        // Feature access requests
+        Route::prefix('feature-requests')->name('feature-requests.')->group(function () {
+            Route::get('/', [AdminFeatureRequestController::class, 'index'])->name('index');
+            Route::post('/{featureRequest}/approve', [AdminFeatureRequestController::class, 'approve'])->name('approve');
+            Route::post('/{featureRequest}/deny',    [AdminFeatureRequestController::class, 'deny'])->name('deny');
+        });
 
         // Bookings
         Route::prefix('bookings')->name('bookings.')->group(function () {
@@ -277,6 +292,24 @@ Route::middleware('auth')->group(function () {
             Route::post('/',          [OwnerInventoryController::class, 'store'])->name('store');
             Route::put('/{asset}',    [OwnerInventoryController::class, 'update'])->name('update');
             Route::delete('/{asset}', [OwnerInventoryController::class, 'destroy'])->name('destroy');
+        });
+
+        // Premium Feature Requests
+        Route::prefix('hotels/{hotel}/features')->name('hotels.features.')->group(function () {
+            Route::get('/',  [OwnerFeatureRequestController::class, 'index'])->name('index');
+            Route::post('/', [OwnerFeatureRequestController::class, 'store'])->name('request');
+        });
+
+        // Corporate / B2B Portal
+        Route::prefix('hotels/{hotel}/corporate')->name('hotels.corporate.')->group(function () {
+            Route::get('/',                          [OwnerCorporateController::class, 'index'])->name('index');
+            Route::get('/create',                    [OwnerCorporateController::class, 'create'])->name('create');
+            Route::post('/',                         [OwnerCorporateController::class, 'store'])->name('store');
+            Route::get('/{corporate}',               [OwnerCorporateController::class, 'show'])->name('show');
+            Route::get('/{corporate}/edit',          [OwnerCorporateController::class, 'edit'])->name('edit');
+            Route::put('/{corporate}',               [OwnerCorporateController::class, 'update'])->name('update');
+            Route::patch('/{corporate}/regenerate',  [OwnerCorporateController::class, 'regenerateCode'])->name('regenerate');
+            Route::delete('/{corporate}',            [OwnerCorporateController::class, 'destroy'])->name('destroy');
         });
     });
 

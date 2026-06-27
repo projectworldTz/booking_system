@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddToCartRequest;
+use App\Models\CorporateAccount;
 use App\Models\Coupon;
 use App\Models\ReservationCartItem;
 use App\Models\RoomType;
@@ -38,13 +39,26 @@ class BookingCartController extends Controller
         $user     = Auth::user();
         $roomType = RoomType::findOrFail($request->room_type_id);
 
+        // Resolve corporate account if a code is submitted
+        $corporate = null;
+        if ($request->filled('corporate_code')) {
+            $corporate = CorporateAccount::where('access_code', $request->corporate_code)
+                ->where('hotel_id', $roomType->hotel_id)
+                ->where('is_active', true)
+                ->first();
+            if ($corporate && $corporate->isContractActive()) {
+                session(['corporate_account_id' => $corporate->id]);
+            }
+        }
+
         try {
             $this->bookingService->addToCart(
                 $user,
                 $roomType,
                 $request->check_in,
                 $request->check_out,
-                (int) $request->guests
+                (int) $request->guests,
+                $corporate
             );
         } catch (\RuntimeException $e) {
             if ($request->expectsJson()) {

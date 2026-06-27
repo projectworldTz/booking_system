@@ -21,6 +21,17 @@
         <span class="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">{{ $pendingCancellations }}</span>
         @endif
     </a>
+    @if($hotel->hasFeature('corporate_portal'))
+    <a href="{{ route('owner.hotels.corporate.index', $hotel) }}" class="btn-ghost btn-sm">🏢 {{ __('Corporate') }}</a>
+    @endif
+    @php $pendingFeatureReqs = \App\Models\FeatureRequest::forHotel($hotel->id)->pending()->count(); @endphp
+    <a href="{{ route('owner.hotels.features.index', $hotel) }}"
+       class="relative btn-ghost btn-sm text-amber-600 dark:text-amber-400">
+        ⭐ {{ __('Premium Features') }}
+        @if($pendingFeatureReqs > 0)
+        <span class="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">{{ $pendingFeatureReqs }}</span>
+        @endif
+    </a>
     <a href="{{ route('owner.hotels.edit', $hotel) }}" class="btn-outline btn-sm">{{ __('Edit Hotel') }}</a>
 </div>
 
