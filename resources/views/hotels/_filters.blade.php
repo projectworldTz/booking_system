@@ -5,8 +5,11 @@
     {{-- Search --}}
     <div class="p-4">
         <label class="form-label">{{ __('Search') }}</label>
-        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
-               class="form-input text-sm" placeholder="{{ __('Hotel name, city…') }}">
+        <div>
+            <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
+                   class="form-input text-sm" placeholder="{{ __('Hotel name, city…') }}"
+                   data-search-glow data-live-search>
+        </div>
     </div>
 
     {{-- Stars --}}

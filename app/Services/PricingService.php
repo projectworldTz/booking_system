@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Coupon;
 use App\Models\RoomType;
 use App\Models\Setting;
 use Carbon\Carbon;
@@ -65,37 +64,27 @@ class PricingService
     }
 
     /**
-     * Build a full order total from a collection of cart item pricing arrays.
+     * Build a full order total from a cart subtotal, applying tax.
      *
      * Returns:
      *   subtotal        float
      *   tax_rate        float
      *   tax_total       float
      *   discount_total  float
-     *   coupon_code     string|null
      *   grand_total     float
      */
-    public function calculateOrderTotal(float $subtotal, ?Coupon $coupon = null): array
+    public function calculateOrderTotal(float $subtotal): array
     {
         $taxRate  = (float) Setting::get('booking_tax_rate', 10);
         $taxTotal = round($subtotal * $taxRate / 100, 2);
 
-        $discountTotal = 0.0;
-        $couponCode    = null;
-
-        if ($coupon && $coupon->isValidForAmount($subtotal)) {
-            $discountTotal = $coupon->calculateDiscount($subtotal);
-            $couponCode    = $coupon->code;
-        }
-
-        $grandTotal = max(0, round($subtotal + $taxTotal - $discountTotal, 2));
+        $grandTotal = max(0, round($subtotal + $taxTotal, 2));
 
         return [
             'subtotal'       => $subtotal,
             'tax_rate'       => $taxRate,
             'tax_total'      => $taxTotal,
-            'discount_total' => $discountTotal,
-            'coupon_code'    => $couponCode,
+            'discount_total' => 0.0,
             'grand_total'    => $grandTotal,
         ];
     }

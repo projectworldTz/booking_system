@@ -13,7 +13,6 @@ class Booking extends Model
         'booking_number',
         'user_id',
         'hotel_id',
-        'coupon_id',
         'corporate_account_id',
         'status',
         'check_in',
@@ -25,7 +24,6 @@ class Booking extends Model
         'tax_total',
         'tax_rate',
         'discount_total',
-        'coupon_code',
         'grand_total',
         'currency',
         'special_requests',
@@ -74,11 +72,6 @@ class Booking extends Model
     public function hotel()
     {
         return $this->belongsTo(Hotel::class);
-    }
-
-    public function coupon()
-    {
-        return $this->belongsTo(Coupon::class);
     }
 
     public function corporateAccount()
@@ -229,6 +222,30 @@ class Booking extends Model
         return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]);
     }
 
+    /** Refund amount recorded on the linked Payment (null when no refund was issued). */
+    public function getRefundAmountAttribute(): ?float
+    {
+        return $this->payment?->refund_amount !== null
+            ? (float) $this->payment->refund_amount
+            : null;
+    }
+
+    /**
+     * Decode the cancellation policy snapshot stored at booking-creation time.
+     * Falls back to the platform default when the booking pre-dates the structured snapshot.
+     */
+    public function getPolicySnapshotAttribute(): array
+    {
+        $raw = $this->cancellation_policy_snapshot;
+        if (! $raw) {
+            return app(\App\Services\CancellationService::class)->policySnapshot();
+        }
+        $decoded = json_decode($raw, true);
+        return is_array($decoded)
+            ? $decoded
+            : app(\App\Services\CancellationService::class)->policySnapshot();
+    }
+
     public function getIsReviewableAttribute(): bool
     {
         return $this->status === self::STATUS_CHECKED_OUT && ! $this->review()->exists();
@@ -241,9 +258,15 @@ class Booking extends Model
      */
     public static function generateBookingNumber(): string
     {
-        $date     = now()->format('Ymd');
-        $sequence = str_pad((static::whereDate('created_at', today())->count() + 1), 5, '0', STR_PAD_LEFT);
+        $date   = now()->format('Ymd');
+        $prefix = "BK-{$date}-";
 
-        return "BK-{$date}-{$sequence}";
+        $last = static::where('booking_number', 'like', $prefix . '%')
+            ->orderByDesc('booking_number')
+            ->value('booking_number');
+
+        $next = $last ? ((int) substr($last, strlen($prefix)) + 1) : 1;
+
+        return $prefix . str_pad($next, 5, '0', STR_PAD_LEFT);
     }
 }

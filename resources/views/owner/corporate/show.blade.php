@@ -75,7 +75,7 @@
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-slate-500">Discount</dt>
-                    <dd class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $corporate->discount_label() }}</dd>
+                    <dd class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $corporate->discountLabel() }}</dd>
                 </div>
                 @if($corporate->credit_limit)
                 <div class="flex justify-between">

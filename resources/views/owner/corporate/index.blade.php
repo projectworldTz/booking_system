@@ -38,7 +38,7 @@
                     <span class="badge badge-pending">Expired</span>
                 @endif
                 <span class="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
-                    {{ $account->discount_label() }}
+                    {{ $account->discountLabel() }}
                 </span>
             </div>
 

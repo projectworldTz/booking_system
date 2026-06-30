@@ -15,7 +15,7 @@
                 </p>
             </div>
             <div class="text-right">
-                <p class="text-3xl font-bold text-amber-300">{{ $corporate->discount_label() }}</p>
+                <p class="text-3xl font-bold text-amber-300">{{ $corporate->discountLabel() }}</p>
                 <p class="text-xs text-white/60 mt-1">Your negotiated rate</p>
                 @if($corporate->contract_end)
                 <p class="text-xs text-white/60">Contract until {{ $corporate->contract_end->format('d M Y') }}</p>
@@ -93,13 +93,30 @@
 
             <div x-show="!loading" class="space-y-4">
 
-                {{-- Static room list with corporate pricing --}}
-                @forelse($roomTypes as $rt)
+                {{-- Pre-compute auth state once to avoid @auth/@else inside @foreach --}}
+                <?php
+                    $isLoggedIn = auth()->check();
+                    $loginUrl   = route('login') . '?redirect=' . urlencode(request()->fullUrl());
+                    $csrfField  = csrf_field();
+                    $cartUrl    = route('booking.cart.store');
+                ?>
+
+                @if($roomTypes->isEmpty())
+                <div class="card p-8 text-center text-slate-400">No room types configured for this hotel.</div>
+                @endif
+
+                @foreach($roomTypes as $rt)
+                <?php
+                    $rtImage       = $rt->images->isNotEmpty() ? $rt->images->first()->url : null;
+                    $rtMeta        = $rt->bed_type . ' · ' . $rt->beds_count . ' bed' . ($rt->beds_count > 1 ? 's' : '');
+                    if ($rt->size_sqm)  $rtMeta .= ' · ' . $rt->size_sqm . 'm²';
+                    if ($rt->view_type) $rtMeta .= ' · ' . ucfirst($rt->view_type) . ' view';
+                ?>
                 <div class="card p-5">
                     <div class="flex flex-wrap gap-5 items-start">
 
-                        @if($rt->media->isNotEmpty())
-                        <img src="{{ $rt->media->first()->url }}" alt="{{ $rt->name }}"
+                        @if($rtImage)
+                        <img src="{{ $rtImage }}" alt="{{ $rt->name }}"
                             class="h-28 w-40 shrink-0 rounded-xl object-cover">
                         @endif
 
@@ -107,15 +124,9 @@
                             <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
                                 <div>
                                     <h4 class="font-bold text-slate-900 dark:text-white">{{ $rt->name }}</h4>
-                                    <p class="text-xs text-slate-500 mt-0.5">
-                                        {{ $rt->bed_type }} · {{ $rt->beds_count }} bed{{ $rt->beds_count > 1 ? 's' : '' }}
-                                        @if($rt->size_sqm)· {{ $rt->size_sqm }}m²@endif
-                                        @if($rt->view_type)· {{ ucfirst($rt->view_type) }} view@endif
-                                    </p>
+                                    <p class="text-xs text-slate-500 mt-0.5">{{ $rtMeta }}</p>
                                 </div>
-
                                 <div class="text-right shrink-0">
-                                    {{-- Original price struck through --}}
                                     <p class="text-xs text-slate-400 line-through">
                                         TZS {{ number_format($rt->base_price, 0) }}/night
                                     </p>
@@ -123,7 +134,7 @@
                                         TZS {{ number_format($rt->corporate_price, 0) }}<span class="text-xs font-normal text-slate-400">/night</span>
                                     </p>
                                     <p class="text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                                        {{ $corporate->discount_label() }} applied
+                                        {{ $corporate->discountLabel() }} applied
                                     </p>
                                 </div>
                             </div>
@@ -132,16 +143,15 @@
                             <p class="text-xs text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">{{ $rt->description }}</p>
                             @endif
 
-                            {{-- Availability indicator from Ajax --}}
+                            {{-- Availability & booking (auth state pre-computed above) --}}
                             <div x-show="availabilityLoaded">
                                 <template x-if="getRoom({{ $rt->id }})">
                                     <div>
                                         <p class="text-xs text-slate-500 mb-2"
                                             x-text="getRoom({{ $rt->id }}).available_count + ' room(s) available'"></p>
-
-                                        @auth
-                                        <form method="POST" action="{{ route('booking.cart.store') }}">
-                                            @csrf
+                                        @if($isLoggedIn)
+                                        <form method="POST" action="{{ $cartUrl }}">
+                                            {!! $csrfField !!}
                                             <input type="hidden" name="room_type_id" value="{{ $rt->id }}">
                                             <input type="hidden" name="check_in" :value="checkIn">
                                             <input type="hidden" name="check_out" :value="checkOut">
@@ -150,9 +160,8 @@
                                             <button type="submit" class="btn-gold btn-sm">Reserve at Corporate Rate</button>
                                         </form>
                                         @else
-                                        <a href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}"
-                                           class="btn-outline btn-sm">Sign in to Book</a>
-                                        @endauth
+                                        <a href="{{ $loginUrl }}" class="btn-outline btn-sm">Sign in to Book</a>
+                                        @endif
                                     </div>
                                 </template>
                                 <template x-if="!getRoom({{ $rt->id }})">
@@ -168,9 +177,7 @@
                         </div>
                     </div>
                 </div>
-                @empty
-                <div class="card p-8 text-center text-slate-400">No room types configured for this hotel.</div>
-                @endforelse
+                @endforeach
             </div>
         </div>
 

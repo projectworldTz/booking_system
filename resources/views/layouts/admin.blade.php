@@ -67,14 +67,6 @@
                 {{ __('Users') }}
             </a>
 
-            <a href="{{ route('admin.coupons.index') }}"
-               class="{{ $isAdmin('coupons') ? 'nav-link-active' : 'nav-link' }}">
-                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z"/>
-                </svg>
-                {{ __('Coupons') }}
-            </a>
-
             <div class="my-2 border-t border-white/10"></div>
 
             <a href="{{ route('admin.reports.revenue') }}"

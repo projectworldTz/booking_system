@@ -43,29 +43,30 @@
         {{-- Quick actions --}}
         <div class="flex flex-wrap gap-2">
             @if($hotel->status === 'pending')
-            <form method="POST" action="{{ route('admin.hotels.approve', $hotel) }}">
+            <form method="POST" action="{{ route('admin.hotels.approve', $hotel) }}" data-loading>
                 @csrf
-                <button class="btn-success btn-sm">{{ __('Approve') }}</button>
+                <button type="submit" class="btn-success btn-sm">{{ __('Approve') }}</button>
             </form>
             @endif
 
             @if($hotel->status === 'active')
-            <form method="POST" action="{{ route('admin.hotels.suspend', $hotel) }}">
+            <form method="POST" action="{{ route('admin.hotels.suspend', $hotel) }}"
+                  data-loading data-confirm="{{ __('Suspend this hotel?') }}">
                 @csrf
-                <button class="btn-danger btn-sm" onclick="return confirm('{{ __('Suspend this hotel?') }}')">{{ __('Suspend') }}</button>
+                <button type="submit" class="btn-danger btn-sm">{{ __('Suspend') }}</button>
             </form>
             @endif
 
             @if($hotel->status === 'suspended')
-            <form method="POST" action="{{ route('admin.hotels.approve', $hotel) }}">
+            <form method="POST" action="{{ route('admin.hotels.approve', $hotel) }}" data-loading>
                 @csrf
-                <button class="btn-success btn-sm">{{ __('Reactivate') }}</button>
+                <button type="submit" class="btn-success btn-sm">{{ __('Reactivate') }}</button>
             </form>
             @endif
 
-            <form method="POST" action="{{ route('admin.hotels.featured', $hotel) }}">
+            <form method="POST" action="{{ route('admin.hotels.featured', $hotel) }}" data-loading>
                 @csrf
-                <button class="btn-outline btn-sm">
+                <button type="submit" class="btn-outline btn-sm">
                     {{ $hotel->is_featured ? __('Unfeature') : __('Feature') }}
                 </button>
             </form>

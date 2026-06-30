@@ -8,7 +8,6 @@ use App\Http\Controllers\Owner\FeatureRequestController as OwnerFeatureRequestCo
 use App\Http\Controllers\Owner\CorporateAccountController as OwnerCorporateController;
 use App\Http\Controllers\CorporatePortalController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
-use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\HotelController as AdminHotelController;
 use App\Http\Controllers\Admin\HotelDashboardController;
@@ -16,7 +15,6 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Owner\CouponController as OwnerCouponController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingCartController;
@@ -110,7 +108,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [BookingCartController::class, 'index'])->name('index');
         Route::post('/', [BookingCartController::class, 'store'])->name('store');
         Route::delete('/{item}', [BookingCartController::class, 'destroy'])->name('destroy');
-        Route::post('/coupon', [BookingCartController::class, 'coupon'])->name('coupon');
         Route::post('/preview', [BookingCartController::class, 'preview'])->name('preview');
     });
 
@@ -125,6 +122,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/{bookingNumber}/cancel', [BookingController::class, 'cancel'])->name('cancel');
         Route::get('/{bookingNumber}/invoice', [BookingController::class, 'invoice'])->name('invoice');
     });
+
+    // Development-only: simulate mobile money payment confirmation
+    if (app()->environment(['local', 'staging'])) {
+        Route::post('/dev/payments/{payment}/confirm', [BookingController::class, 'devConfirmPayment'])
+            ->name('dev.payment.confirm');
+    }
 
     // Favourites
     Route::prefix('favorites')->name('favorites.')->group(function () {
@@ -206,14 +209,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/occupancy', [ReportController::class, 'occupancy'])->name('occupancy');
         });
 
-        // Coupons
-        Route::prefix('coupons')->name('coupons.')->group(function () {
-            Route::get('/', [AdminCouponController::class, 'index'])->name('index');
-            Route::get('/create', [AdminCouponController::class, 'create'])->name('create');
-            Route::post('/', [AdminCouponController::class, 'store'])->name('store');
-            Route::post('/{coupon}/toggle', [AdminCouponController::class, 'toggle'])->name('toggle');
-            Route::delete('/{coupon}', [AdminCouponController::class, 'destroy'])->name('destroy');
-        });
     });
 
     // ── Hotel Owner ───────────────────────────────────────────────────────────
@@ -244,14 +239,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/images/{image}/set-cover', [OwnerHotelController::class, 'setCoverImage'])->name('images.set-cover');
             Route::delete('/images/{image}', [OwnerHotelController::class, 'deleteImage'])->name('images.destroy');
 
-            // Coupons
-            Route::prefix('/{hotel}/coupons')->name('coupons.')->group(function () {
-                Route::get('/', [OwnerCouponController::class, 'index'])->name('index');
-                Route::get('/create', [OwnerCouponController::class, 'create'])->name('create');
-                Route::post('/', [OwnerCouponController::class, 'store'])->name('store');
-                Route::post('/{coupon}/toggle', [OwnerCouponController::class, 'toggle'])->name('toggle');
-                Route::delete('/{coupon}', [OwnerCouponController::class, 'destroy'])->name('destroy');
-            });
+            // Payment methods
+            Route::post('/{hotel}/payment-methods', [OwnerHotelController::class, 'updatePaymentMethods'])->name('payment-methods.update');
+
+            // Online booking toggle
+            Route::post('/{hotel}/toggle-online-booking', [OwnerHotelController::class, 'toggleOnlineBooking'])->name('toggle-online-booking');
 
             // Staff management
             Route::prefix('/{hotel}/staff')->name('staff.')->group(function () {

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AddToCartRequest;
 use App\Models\CorporateAccount;
-use App\Models\Coupon;
 use App\Models\ReservationCartItem;
 use App\Models\RoomType;
 use App\Models\User;
@@ -101,37 +100,14 @@ class BookingCartController extends Controller
     }
 
     /**
-     * Preview coupon discount against current cart (AJAX).
-     */
-    public function coupon(Request $request)
-    {
-        $request->validate(['code' => 'required|string|max:50']);
-
-        /** @var User $user */
-        $user    = Auth::user();
-        $cart    = $this->bookingService->getCart($user);
-        $hotelId = $cart->items->first()?->room?->hotel_id;
-
-        $result = $this->bookingService->applyCouponPreview($user, $request->input('code'), $hotelId);
-
-        return response()->json($result);
-    }
-
-    /**
-     * Preview order total (tax + optional coupon). Used by checkout page.
+     * Preview order total (tax). Used by checkout page.
      */
     public function preview(Request $request)
     {
         /** @var User $user */
         $user   = Auth::user();
         $cart   = $this->bookingService->getCart($user);
-        $coupon = null;
-
-        if ($request->filled('coupon_code')) {
-            $coupon = Coupon::where('code', strtoupper($request->input('coupon_code')))->valid()->first();
-        }
-
-        $totals = $this->pricingService->calculateOrderTotal((float) $cart->sub_total, $coupon);
+        $totals = $this->pricingService->calculateOrderTotal((float) $cart->sub_total);
 
         return response()->json($totals);
     }

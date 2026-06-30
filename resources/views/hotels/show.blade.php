@@ -15,12 +15,14 @@
         {{-- Main content --}}
         <div class="lg:col-span-2 space-y-6">
 
-            {{-- Image gallery --}}
+            {{-- Image gallery with crossfade --}}
             <div x-data="gallery()" class="relative">
                 @if($hotel->images->isNotEmpty())
-                    <div class="overflow-hidden rounded-2xl">
+                    <div class="overflow-hidden rounded-2xl shadow-lg">
                         <img :src="images[current]" :alt="'{{ __('Hotel image') }} ' + (current + 1)"
-                             class="h-72 w-full object-cover sm:h-96">
+                             class="h-72 w-full object-cover sm:h-96 transition-opacity duration-300"
+                             data-gallery-img
+                             onerror="this.src='{{ asset('images/room-placeholder.svg') }}'; this.onerror=null;">
                     </div>
                     @if($hotel->images->count() > 1)
                     <div class="mt-2 grid grid-cols-5 gap-2">
@@ -28,7 +30,8 @@
                         <button @click="current = {{ $idx }}"
                                 :class="current === {{ $idx }} ? 'ring-2 ring-navy' : 'opacity-70 hover:opacity-100'"
                                 class="overflow-hidden rounded-xl transition">
-                            <img src="{{ $img->url }}" alt="" class="h-16 w-full object-cover">
+                            <img src="{{ $img->url }}" alt="" class="h-16 w-full object-cover"
+                                 onerror="this.src='{{ asset('images/room-placeholder.svg') }}'; this.onerror=null;">
                         </button>
                         @endforeach
                     </div>
@@ -68,13 +71,15 @@
                     </div>
                     <div class="text-right">
                         @if($hotel->average_rating)
-                            <div class="text-3xl font-bold text-navy dark:text-navy-light">{{ number_format($hotel->average_rating, 1) }}</div>
+                            <div class="text-3xl font-bold text-navy dark:text-navy-light"
+                                 data-count="{{ number_format($hotel->average_rating, 1) }}"
+                                 data-count-suffix="">{{ number_format($hotel->average_rating, 1) }}</div>
                             <div class="text-xs text-slate-500">{{ __('out of 5') }}</div>
                         @endif
                         @auth
                         <form method="POST" action="{{ route('favorites.toggle', $hotel) }}" class="mt-2">
                             @csrf
-                            <button type="submit"
+                            <button type="submit" data-favorite-btn
                                     class="flex items-center gap-1.5 text-sm font-medium {{ auth()->user()->hasFavorited($hotel->id) ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500' }} transition">
                                 <svg class="h-4 w-4" fill="{{ auth()->user()->hasFavorited($hotel->id) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -117,9 +122,9 @@
 
             {{-- Amenities --}}
             @if($hotel->amenities->isNotEmpty())
-            <div class="card p-6">
+            <div class="card p-6" data-reveal>
                 <h2 class="section-title mb-4">{{ __('Amenities') }}</h2>
-                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" data-stagger="40">
                     @foreach($hotel->amenities as $amenity)
                     <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                         <svg class="h-4 w-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -134,11 +139,14 @@
 
             {{-- Room types --}}
             @if($hotel->roomTypes->isNotEmpty())
-            <div class="card p-6">
+            <div class="card p-6" data-reveal>
                 <h2 class="section-title mb-4">{{ __('Room Types') }}</h2>
                 <div class="space-y-4">
                     @foreach($hotel->roomTypes as $rt)
-                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-navy/30 dark:hover:border-navy-light/30 transition">
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-4
+                                hover:border-navy/40 dark:hover:border-navy-light/40
+                                hover:shadow-md transition-all duration-300"
+                         data-reveal data-reveal-delay="{{ $loop->index * 80 }}">
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div>
                                 <h3 class="font-bold text-slate-900 dark:text-white">{{ $rt->name }}</h3>
@@ -175,16 +183,57 @@
             </div>
             @endif
 
+            {{-- Premium Services / Features --}}
+            @php
+                $activeFeatures = $hotel->hotelFeatures()
+                    ->get()
+                    ->filter(fn($hf) => $hf->isActive())
+                    ->values();
+            @endphp
+            @if($activeFeatures->isNotEmpty())
+            <div class="card p-6">
+                <h2 class="section-title mb-1">{{ __('Premium Services') }}</h2>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mb-4">{{ __('This hotel offers the following enhanced features for guests.') }}</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    @foreach($activeFeatures as $hf)
+                    @php
+                        $feat = $hf->feature;
+                        $live = $feat->isLive();
+                        $tierColor = match($feat->tierColor()) {
+                            'emerald' => ['bg' => 'bg-emerald-50 dark:bg-emerald-900/20', 'text' => 'text-emerald-700 dark:text-emerald-300', 'dot' => 'bg-emerald-400'],
+                            'blue'    => ['bg' => 'bg-blue-50 dark:bg-blue-900/20',       'text' => 'text-blue-700 dark:text-blue-300',       'dot' => 'bg-blue-400'],
+                            'purple'  => ['bg' => 'bg-purple-50 dark:bg-purple-900/20',   'text' => 'text-purple-700 dark:text-purple-300',   'dot' => 'bg-purple-400'],
+                            'amber'   => ['bg' => 'bg-amber-50 dark:bg-amber-900/20',     'text' => 'text-amber-700 dark:text-amber-300',     'dot' => 'bg-amber-400'],
+                            default   => ['bg' => 'bg-slate-50 dark:bg-slate-700',        'text' => 'text-slate-600 dark:text-slate-300',     'dot' => 'bg-slate-400'],
+                        };
+                    @endphp
+                    <div class="flex items-start gap-2.5 rounded-xl {{ $live ? $tierColor['bg'] : 'bg-slate-50 dark:bg-slate-800' }} p-3">
+                        <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full {{ $live ? $tierColor['dot'] : 'bg-slate-300 dark:bg-slate-600' }}"></span>
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold {{ $live ? $tierColor['text'] : 'text-slate-400 dark:text-slate-500' }} leading-snug">
+                                {{ $feat->label() }}
+                            </p>
+                            @if(!$live)
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Coming Soon</p>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             {{-- Reviews --}}
             @if($hotel->approvedReviews->isNotEmpty())
-            <div class="card p-6">
+            <div class="card p-6" data-reveal>
                 <h2 class="section-title mb-4">
                     {{ __('Guest Reviews') }}
                     <span class="ml-2 text-base font-normal text-slate-500">({{ $hotel->approvedReviews->count() }})</span>
                 </h2>
                 <div class="space-y-4">
                     @foreach($hotel->approvedReviews->take(5) as $review)
-                    <div class="border-b border-slate-100 dark:border-slate-700 pb-4 last:border-0 last:pb-0">
+                    <div class="border-b border-slate-100 dark:border-slate-700 pb-4 last:border-0 last:pb-0"
+                         data-reveal data-reveal-delay="{{ $loop->index * 100 }}">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-navy/10 dark:bg-navy/30 text-sm font-bold text-navy dark:text-navy-light">

@@ -4,7 +4,7 @@
     use App\Enums\Feature;
 
     // When on a hotel page, only show the widget if the hotel has AI_CONCIERGE granted
-    if (isset($hotel) && !$hotel->hasFeature(Feature::AI_CONCIERGE)) {
+    if (isset($hotel) && (!($hotel instanceof \App\Models\Hotel) || !$hotel->hasFeature(Feature::AI_CONCIERGE))) {
         return; // silently skip — no widget for hotels without the feature
     }
 

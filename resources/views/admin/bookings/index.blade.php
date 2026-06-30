@@ -6,6 +6,7 @@
 <div class="mb-5 flex flex-wrap items-center gap-3">
     <form method="GET" action="{{ route('admin.bookings.index') }}" class="flex flex-wrap gap-2">
         <input type="text" name="search" value="{{ request('search') }}"
+               data-live-search
                class="form-input w-48 py-2 text-sm" placeholder="{{ __('Booking # or guest…') }}">
         <select name="status" class="form-select py-2 text-sm w-auto">
             <option value="">{{ __('All Status') }}</option>
@@ -36,7 +37,7 @@
         </thead>
         <tbody>
             @forelse($bookings as $b)
-            <tr class="tr-hover">
+            <tr class="tr-hover" data-href="{{ route('admin.bookings.show', $b) }}">
                 <td class="font-mono text-xs">{{ $b->booking_number }}</td>
                 <td>{{ $b->user->name ?? 'N/A' }}</td>
                 <td>{{ $b->hotel->name ?? 'N/A' }}</td>
@@ -44,7 +45,7 @@
                 <td class="text-sm whitespace-nowrap">{{ \Carbon\Carbon::parse($b->check_out)->format('d M Y') }}</td>
                 <td class="font-semibold">TZS {{ number_format($b->grand_total ?? 0, 0) }}</td>
                 <td><span class="badge badge-{{ $b->status }}">{{ ucfirst(str_replace('_',' ',$b->status)) }}</span></td>
-                <td><a href="{{ route('admin.bookings.show', $b) }}" class="btn-ghost btn-sm">{{ __('View') }}</a></td>
+                <td><a href="{{ route('admin.bookings.show', $b) }}" class="btn-ghost btn-sm" onclick="event.stopPropagation()">{{ __('View') }}</a></td>
             </tr>
             @empty
             <tr><td colspan="8" class="text-center py-10 text-slate-500">{{ __('No bookings found.') }}</td></tr>

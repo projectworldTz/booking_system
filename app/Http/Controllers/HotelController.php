@@ -38,6 +38,11 @@ class HotelController extends Controller
     {
         abort_if($hotel->status !== 'active', 404);
 
+        // Tenant isolation: block navigation to a different hotel's page
+        if (app()->bound('current_hotel') && app('current_hotel')->id !== $hotel->id) {
+            return redirect()->route('hotels.show', app('current_hotel'));
+        }
+
         $hotel->loadMissing([
             'images', 'amenities', 'roomTypes.images', 'roomTypes.amenities',
             'approvedReviews.user', 'category',

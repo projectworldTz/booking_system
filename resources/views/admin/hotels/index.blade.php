@@ -6,6 +6,7 @@
 <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
     <form method="GET" action="{{ route('admin.hotels.index') }}" class="flex flex-wrap gap-2">
         <input type="text" name="search" value="{{ request('search') }}"
+               data-live-search
                class="form-input w-48 py-2 text-sm" placeholder="{{ __('Search hotels…') }}">
         <select name="status" class="form-select py-2 text-sm w-auto">
             <option value="">{{ __('All Status') }}</option>

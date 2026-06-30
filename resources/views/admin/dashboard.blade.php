@@ -4,6 +4,13 @@
 
 @section('content')
 
+{{-- ── Auto-refresh indicator ──────────────────────────────────────────────── --}}
+<div class="flex items-center justify-end mb-3 text-xs text-slate-400 dark:text-slate-500 gap-1.5">
+    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span>{{ __('Live data') }}</span>
+    <span id="admin-refresh-countdown" class="tabular-nums">↻ 300s</span>
+</div>
+
 {{-- ── Top stat row ─────────────────────────────────────────────────────────── --}}
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
 
@@ -185,6 +192,19 @@
 
 @push('scripts')
 <script>
+// Auto-reload page every 5 minutes when tab is visible
+(function () {
+    let countdown = 300;
+    const indicator = document.getElementById('admin-refresh-countdown');
+    const tick = setInterval(() => {
+        if (document.hidden) return;
+        countdown--;
+        if (indicator) indicator.textContent = '↻ ' + countdown + 's';
+        if (countdown <= 0) { clearInterval(tick); window.location.reload(); }
+    }, 1000);
+})();
+
+// Revenue chart
 (function () {
     const revenue = @json($revenue);
     const ctx = document.getElementById('revenueChart');

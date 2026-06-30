@@ -121,6 +121,19 @@ enum Feature: string
         };
     }
 
+    /** Whether this feature has a real working implementation. */
+    public function isLive(): bool
+    {
+        return match ($this) {
+            self::HOUSEKEEPING,
+            self::ADVANCED_ANALYTICS,
+            self::INVENTORY_MANAGEMENT,
+            self::CORPORATE_PORTAL,
+            self::AI_CONCIERGE => true,
+            default            => false,
+        };
+    }
+
     /** All features grouped by tier for display. */
     public static function grouped(): array
     {

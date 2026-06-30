@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#e2e8f0"/>
+  <rect x="260" y="200" width="280" height="110" rx="8" fill="#94a3b8"/>
+  <rect x="260" y="145" width="110" height="60" rx="6" fill="#94a3b8"/>
+  <rect x="430" y="145" width="110" height="60" rx="6" fill="#94a3b8"/>
+  <rect x="248" y="308" width="20" height="30" rx="4" fill="#94a3b8"/>
+  <rect x="532" y="308" width="20" height="30" rx="4" fill="#94a3b8"/>
+  <text x="400" y="390" font-family="system-ui,sans-serif" font-size="18" fill="#64748b" text-anchor="middle">Image not available</text>
+</svg>

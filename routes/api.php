@@ -5,7 +5,8 @@ use App\Http\Controllers\Api\AvailabilityApiController;
 use App\Http\Controllers\Api\BookingApiController;
 use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\HotelApiController;
-use App\Http\Controllers\Api\PaymentWebhookController;
+use App\Http\Controllers\Api\MobileMoneyWebhookController;
+use App\Http\Controllers\Api\PaymentStatusController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -34,9 +35,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [CartApiController::class, 'index']);
         Route::post('/', [CartApiController::class, 'store']);
         Route::delete('/{item}', [CartApiController::class, 'destroy']);
-        Route::post('/coupon', [CartApiController::class, 'applyCoupon']);
         Route::post('/preview', [CartApiController::class, 'preview']);
     });
+
+    // Payment status polling
+    Route::get('/payments/{payment}/status', [PaymentStatusController::class, 'show']);
 
     // Bookings
     Route::prefix('bookings')->group(function () {
@@ -47,8 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-// ── Payment webhooks (no auth — verified by gateway signature) ────────────────
-Route::prefix('webhooks')->group(function () {
-    Route::post('/stripe', [PaymentWebhookController::class, 'stripe']);
-    Route::post('/paypal', [PaymentWebhookController::class, 'paypal']);
+// ── Mobile money webhooks (no auth — called by payment providers) ─────────────
+Route::prefix('webhooks')->name('api.webhooks.')->group(function () {
+    Route::post('/mobile-money/{provider}', [MobileMoneyWebhookController::class, 'handle'])
+        ->where('provider', 'airtel_money|mpesa|halotel|mix_by_yas')
+        ->name('mobile-money');
 });

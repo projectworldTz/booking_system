@@ -137,7 +137,7 @@
             @endif
             @if($booking->discount_total > 0)
             <div class="total-row" style="color: #16a34a;">
-                <span>Discount @if($booking->coupon_code)({{ $booking->coupon_code }})@endif</span>
+                <span>Discount</span>
                 <span>-${{ number_format($booking->discount_total, 2) }}</span>
             </div>
             @endif

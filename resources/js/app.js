@@ -1,4 +1,6 @@
 import './bootstrap';
+import './ui';
+import { initPublicAnimations } from './public-animations';
 import Alpine from 'alpinejs';
 import Chart from 'chart.js/auto';
 
@@ -18,3 +20,12 @@ document.addEventListener('alpine:init', () => {
 });
 
 Alpine.start();
+
+// Run public animations only on public-facing pages
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.body.dataset.public) {
+        initPublicAnimations();
+    } else {
+        document.body.classList.add('page-loaded');
+    }
+});

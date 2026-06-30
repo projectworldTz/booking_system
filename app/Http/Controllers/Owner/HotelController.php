@@ -246,6 +246,37 @@ class HotelController extends Controller
         return back()->with('success', 'Photo deleted.');
     }
 
+    // ── Online booking toggle ─────────────────────────────────────────────────
+
+    public function toggleOnlineBooking(Hotel $hotel): RedirectResponse
+    {
+        $this->authorizeHotel($hotel);
+
+        $hotel->update(['online_booking_enabled' => ! $hotel->online_booking_enabled]);
+
+        $label = $hotel->online_booking_enabled ? 'enabled' : 'disabled';
+
+        return back()->with('success', "Online booking {$label} successfully.");
+    }
+
+    // ── Payment methods ───────────────────────────────────────────────────────
+
+    public function updatePaymentMethods(Request $request, Hotel $hotel): RedirectResponse
+    {
+        $this->authorizeHotel($hotel);
+
+        $data = $request->validate([
+            'payment_methods'   => ['required', 'array', 'min:1'],
+            'payment_methods.*' => ['in:airtel_money,mpesa,halotel,mix_by_yas'],
+        ], [
+            'payment_methods.min' => 'At least one payment method must be enabled.',
+        ]);
+
+        $hotel->update(['payment_methods' => $data['payment_methods']]);
+
+        return back()->with('success', 'Payment methods updated successfully.');
+    }
+
     // ── Guard ─────────────────────────────────────────────────────────────────
 
     private function authorizeHotel(Hotel $hotel): void

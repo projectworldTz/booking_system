@@ -36,16 +36,32 @@ class Hotel extends Model
         'status',
         'featured',
         'cancellation_policy',
+        'payment_methods',
+        'online_booking_enabled',
     ];
 
     protected $casts = [
         'star_rating'     => 'integer',
         'total_rooms'     => 'integer',
         'commission_rate' => 'decimal:2',
-        'featured'        => 'boolean',
-        'latitude'        => 'float',
-        'longitude'       => 'float',
+        'featured'         => 'boolean',
+        'latitude'         => 'float',
+        'longitude'        => 'float',
+        'payment_methods'         => 'array',
+        'online_booking_enabled'  => 'boolean',
     ];
+
+    /** All payment method keys supported by the platform. */
+    public const ALL_PAYMENT_METHODS = ['airtel_money', 'mpesa', 'halotel', 'mix_by_yas'];
+
+    /**
+     * Return the enabled payment method keys for this hotel.
+     * Falls back to all methods when the owner has not configured anything.
+     */
+    public function enabledPaymentMethods(): array
+    {
+        return $this->payment_methods ?: self::ALL_PAYMENT_METHODS;
+    }
 
     // ── Relationships ─────────────────────────────────────────────────────────
 
@@ -117,11 +133,6 @@ class Hotel extends Model
     public function commissions()
     {
         return $this->hasMany(Commission::class);
-    }
-
-    public function coupons()
-    {
-        return $this->hasMany(Coupon::class);
     }
 
     public function seasonalPrices()

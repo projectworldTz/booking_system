@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $roomType->name . ' — ' . $hotel->name)
+@section('title', "{$roomType->name} — {$hotel->name}")
 
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -19,19 +19,27 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Images --}}
-            <div x-data="{ current: 0, images: @json($roomType->images->pluck('url')->values()) }">
+            @php
+                $featuredIdx = $roomType->images->search(fn($img) => $img->is_featured);
+                $initialIdx  = $featuredIdx !== false ? $featuredIdx : 0;
+            @endphp
+            <div x-data='{ "current": {{ $initialIdx }}, "images": @json($roomType->images->pluck("url")->values()) }'>
                 @if($roomType->images->isNotEmpty())
-                    <div class="overflow-hidden rounded-2xl">
+                    <div class="overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 shadow-lg">
                         <img :src="images[current]" alt="{{ $roomType->name }}"
-                             class="h-72 w-full object-cover sm:h-96">
+                             class="h-72 w-full object-cover sm:h-96 transition-opacity duration-300"
+                             data-gallery-img
+                             x-on:error="if($el.src !== '{{ asset('images/room-placeholder.svg') }}') $el.src='{{ asset('images/room-placeholder.svg') }}'">
                     </div>
                     @if($roomType->images->count() > 1)
                     <div class="mt-2 grid grid-cols-5 gap-2">
                         @foreach($roomType->images->take(5) as $idx => $img)
                         <button @click="current = {{ $idx }}"
                                 :class="current === {{ $idx }} ? 'ring-2 ring-navy' : 'opacity-70 hover:opacity-100'"
-                                class="overflow-hidden rounded-xl transition">
-                            <img src="{{ $img->url }}" alt="" class="h-16 w-full object-cover">
+                                class="overflow-hidden rounded-xl transition bg-slate-100 dark:bg-slate-800">
+                            <img src="{{ $img->url }}" alt=""
+                                 class="h-16 w-full object-cover"
+                                 onerror="this.src='{{ asset('images/room-placeholder.svg') }}'; this.onerror=null;">
                         </button>
                         @endforeach
                     </div>
@@ -46,7 +54,7 @@
             </div>
 
             {{-- Room header --}}
-            <div class="card p-6">
+            <div class="card p-6" data-reveal>
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ $roomType->name }}</h1>
@@ -72,7 +80,9 @@
                     </div>
                     <div class="text-right">
                         <div class="text-3xl font-bold text-navy dark:text-navy-light">
-                            TZS {{ number_format($roomType->base_price, 0) }}
+                            TZS <span data-count="{{ $roomType->base_price }}"
+                                      data-count-suffix=""
+                                      class="tabular-nums">{{ number_format($roomType->base_price, 0) }}</span>
                         </div>
                         <div class="text-xs text-slate-500">{{ __('per night') }}</div>
                     </div>
@@ -85,9 +95,9 @@
 
             {{-- Room amenities --}}
             @if($roomType->amenities->isNotEmpty())
-            <div class="card p-6">
+            <div class="card p-6" data-reveal>
                 <h2 class="section-title mb-4">{{ __('Room Amenities') }}</h2>
-                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" data-stagger="40">
                     @foreach($roomType->amenities as $amenity)
                     <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                         <svg class="h-4 w-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

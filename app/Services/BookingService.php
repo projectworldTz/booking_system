@@ -3,10 +3,9 @@
 namespace App\Services;
 
 use App\Enums\Feature;
-use App\Events\BookingCancelled;
 use App\Models\Booking;
+use App\Services\CancellationService;
 use App\Models\BookingRoom;
-use App\Models\Coupon;
 use App\Models\Hotel;
 use App\Models\HousekeepingTask;
 use App\Models\ReservationCart;
@@ -32,6 +31,7 @@ class BookingService
         private AvailabilityService    $availabilityService,
         private PricingService         $pricingService,
         private InvoiceService         $invoiceService,
+        private CancellationService    $cancellationService,
     ) {}
 
     // ── Cart management ───────────────────────────────────────────────────────
@@ -59,6 +59,11 @@ class BookingService
      */
     public function addToCart(User $user, RoomType $roomType, string $checkIn, string $checkOut, int $guests, ?\App\Models\CorporateAccount $corporate = null): ReservationCartItem
     {
+        // Reject if the hotel has disabled online booking
+        if (! $roomType->hotel->online_booking_enabled) {
+            throw new \RuntimeException('Online booking is currently unavailable for this hotel.');
+        }
+
         // Validate dates
         $dateCheck = $this->availabilityService->validateDates($checkIn, $checkOut);
         if (! $dateCheck['valid']) {
@@ -123,33 +128,6 @@ class BookingService
             });
     }
 
-    /**
-     * Preview coupon discount against the current cart subtotal.
-     * Returns ['valid' => bool, 'discount' => float, 'message' => string].
-     */
-    public function applyCouponPreview(User $user, string $code, ?int $hotelId = null): array
-    {
-        $cart   = $this->getCart($user);
-        $coupon = Coupon::where('code', strtoupper($code))->valid()->first();
-
-        if (! $coupon) {
-            return ['valid' => false, 'discount' => 0.0, 'message' => 'Coupon code is invalid or expired.'];
-        }
-
-        // Hotel-scoped coupon — must match
-        if ($coupon->hotel_id && $coupon->hotel_id !== $hotelId) {
-            return ['valid' => false, 'discount' => 0.0, 'message' => 'This coupon is not valid for this hotel.'];
-        }
-
-        $discount = $coupon->calculateDiscount($cart->sub_total);
-
-        if ($discount <= 0) {
-            return ['valid' => false, 'discount' => 0.0, 'message' => "Minimum booking amount for this coupon is \${$coupon->min_booking_amount}."];
-        }
-
-        return ['valid' => true, 'discount' => $discount, 'message' => "Coupon applied. You save \${$discount}."];
-    }
-
     // ── Checkout & booking creation ───────────────────────────────────────────
 
     /**
@@ -183,16 +161,10 @@ class BookingService
                 $item->refreshPricing();
             }
 
-            // 2. Resolve coupon
-            $coupon = null;
-            if (! empty($checkoutData['coupon_code'])) {
-                $coupon = Coupon::where('code', strtoupper($checkoutData['coupon_code']))->valid()->first();
-            }
-
-            // 3. Calculate totals
+            // 2. Calculate totals
             $subtotal  = (float) $cart->items->sum('sub_total');
             $hotel     = $cart->items->first()->room->hotel;
-            $totals    = $this->pricingService->calculateOrderTotal($subtotal, $coupon);
+            $totals    = $this->pricingService->calculateOrderTotal($subtotal);
 
             // 4. Determine overall check-in/out (may span multiple room items)
             $checkIn  = $cart->items->min('check_in');
@@ -216,7 +188,6 @@ class BookingService
                 'booking_number'               => Booking::generateBookingNumber(),
                 'user_id'                      => $user->id,
                 'hotel_id'                     => $hotel->id,
-                'coupon_id'                    => $coupon?->id,
                 'corporate_account_id'         => $corporateAccountId,
                 'status'                       => Booking::STATUS_PENDING,
                 'check_in'                     => $checkIn,
@@ -228,11 +199,10 @@ class BookingService
                 'tax_total'                    => $totals['tax_total'],
                 'tax_rate'                     => $totals['tax_rate'],
                 'discount_total'               => $totals['discount_total'],
-                'coupon_code'                  => $totals['coupon_code'],
                 'grand_total'                  => $totals['grand_total'],
-                'currency'                     => 'USD',
+                'currency'                     => 'TZS',
                 'special_requests'             => $checkoutData['special_requests'] ?? null,
-                'cancellation_policy_snapshot' => $hotel->cancellation_policy,
+                'cancellation_policy_snapshot' => json_encode($this->cancellationService->policySnapshot()),
             ]);
 
             // 7. Create BookingRoom records and block dates
@@ -251,10 +221,7 @@ class BookingService
                 $this->availabilityRepository->blockForBooking($item->room, $booking);
             }
 
-            // 7. Increment coupon usage
-            $coupon?->incrementUses();
-
-            // 8. Create the invoice
+            // 7. Create the invoice
             $this->invoiceService->generateForBooking($booking);
 
             // 9. Clear cart and corporate session
@@ -314,30 +281,13 @@ class BookingService
     }
 
     /**
-     * Cancel a booking and release all blocked room dates.
+     * Cancel a booking, compute refund, and fire the BookingCancelled event.
      *
      * @throws \RuntimeException when booking is not cancellable
      */
     public function cancel(Booking $booking, string $reason = ''): Booking
     {
-        if (! $booking->is_cancellable) {
-            throw new \RuntimeException("Booking #{$booking->booking_number} cannot be cancelled in its current status.");
-        }
-
-        DB::transaction(function () use ($booking, $reason) {
-            $booking->update([
-                'status'              => Booking::STATUS_CANCELLED,
-                'cancellation_reason' => $reason,
-                'cancelled_at'        => now(),
-            ]);
-
-            $this->availabilityRepository->releaseAllForBooking($booking);
-        });
-
-        $booking->refresh();
-        event(new BookingCancelled($booking));
-
-        return $booking;
+        return $this->cancellationService->cancel($booking, $reason);
     }
 
     // ── Retrieval delegates ───────────────────────────────────────────────────

@@ -14,7 +14,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="min-h-screen bg-surface dark:bg-slate-950">
+<body class="min-h-screen bg-surface dark:bg-slate-950" data-public="1">
 
 {{-- ── Navbar ── --}}
 <header x-data="{ open: false, userOpen: false }"
@@ -22,7 +22,7 @@
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 
         {{-- Logo --}}
-        <a href="{{ route('home') }}" class="flex items-center gap-2 text-xl font-bold text-navy dark:text-white">
+        <a href="{{ ($tenantMode ?? false) ? route('hotels.show', $currentHotel) : route('home') }}" class="flex items-center gap-2 text-xl font-bold text-navy dark:text-white">
             <svg class="h-7 w-7 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
             </svg>
@@ -31,6 +31,7 @@
 
         {{-- Desktop navigation --}}
         <nav class="hidden items-center gap-1 md:flex">
+            @unless($tenantMode ?? false)
             <a href="{{ route('hotels.index') }}"
                class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-navy dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
                 {{ __('Hotels') }}
@@ -39,19 +40,22 @@
                class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-navy dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
                 {{ __('Blog') }}
             </a>
+            @endunless
         </nav>
 
         {{-- Right controls --}}
         <div class="flex items-center gap-1">
 
             @auth
-            {{-- Favourites --}}
+            {{-- Favourites (hidden in tenant/hotel mode) --}}
+            @unless($tenantMode ?? false)
             <a href="{{ route('favorites.index') }}"
                class="btn-ghost btn-sm p-2 rounded-lg" title="{{ __('Saved Hotels') }}">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                 </svg>
             </a>
+            @endunless
 
             {{-- Cart --}}
             <a href="{{ route('booking.cart') }}"
@@ -140,11 +144,15 @@
 
     {{-- Mobile menu --}}
     <div x-show="open" class="border-t border-slate-200 px-4 pb-3 pt-2 dark:border-slate-700 md:hidden">
+        @unless($tenantMode ?? false)
         <a href="{{ route('hotels.index') }}" class="block py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Hotels') }}</a>
         <a href="{{ route('blog.index') }}" class="block py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Blog') }}</a>
+        @endunless
         @auth
             <a href="{{ route('dashboard') }}" class="block py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('My Bookings') }}</a>
+            @unless($tenantMode ?? false)
             <a href="{{ route('favorites.index') }}" class="block py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Saved Hotels') }}</a>
+            @endunless
         @endauth
     </div>
 </header>

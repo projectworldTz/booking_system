@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
-use App\Services\Payments\BankTransferGateway;
-use App\Services\Payments\CashGateway;
+use App\Services\Payments\AirtelMoneyGateway;
+use App\Services\Payments\HalotelGateway;
+use App\Services\Payments\MixByYasGateway;
+use App\Services\Payments\MpesaGateway;
 use App\Services\Payments\PaymentGatewayInterface;
-use App\Services\Payments\PayPalGateway;
-use App\Services\Payments\StripeGateway;
 
 class PaymentService
 {
@@ -16,32 +16,26 @@ class PaymentService
     private array $gateways;
 
     public function __construct(
-        StripeGateway      $stripe,
-        PayPalGateway      $paypal,
-        BankTransferGateway $bank,
-        CashGateway        $cash,
+        AirtelMoneyGateway $airtelMoney,
+        MpesaGateway       $mpesa,
+        HalotelGateway     $halotel,
+        MixByYasGateway    $mixByYas,
     ) {
         $this->gateways = [
-            $stripe->getKey() => $stripe,
-            $paypal->getKey() => $paypal,
-            $bank->getKey()   => $bank,
-            $cash->getKey()   => $cash,
+            $airtelMoney->getKey() => $airtelMoney,
+            $mpesa->getKey()       => $mpesa,
+            $halotel->getKey()     => $halotel,
+            $mixByYas->getKey()    => $mixByYas,
         ];
     }
 
-    /**
-     * Return all registered gateway instances.
-     *
-     * @return array<string, PaymentGatewayInterface>
-     */
+    /** @return array<string, PaymentGatewayInterface> */
     public function gateways(): array
     {
         return $this->gateways;
     }
 
-    /**
-     * Return a list of gateway keys and labels suitable for a select dropdown.
-     */
+    /** Return gateway keys and labels for a select dropdown. */
     public function availableGateways(): array
     {
         return array_map(
@@ -50,11 +44,7 @@ class PaymentService
         );
     }
 
-    /**
-     * Resolve a gateway by its key.
-     *
-     * @throws \InvalidArgumentException for unknown gateways
-     */
+    /** @throws \InvalidArgumentException for unknown gateways */
     public function gateway(string $key): PaymentGatewayInterface
     {
         if (! isset($this->gateways[$key])) {
@@ -64,34 +54,17 @@ class PaymentService
         return $this->gateways[$key];
     }
 
-    /**
-     * Initiate a payment for a booking via the specified gateway.
-     * Returns the gateway response array.
-     */
     public function initiate(Booking $booking, string $gatewayKey, array $data = []): array
     {
-        $gateway  = $this->gateway($gatewayKey);
-        $response = $gateway->initiate($booking, $data);
-
-        return $response;
+        return $this->gateway($gatewayKey)->initiate($booking, $data);
     }
 
-    /**
-     * Verify and complete a payment (called from webhook or return URL).
-     */
     public function verify(Payment $payment, array $gatewayData): array
     {
-        $gateway  = $this->gateway($payment->method);
-        $response = $gateway->verify($payment, $gatewayData);
-
-        return $response;
+        return $this->gateway($payment->method)->verify($payment, $gatewayData);
     }
 
-    /**
-     * Issue a refund (full or partial) for a paid booking.
-     *
-     * @throws \RuntimeException when booking has no paid payment
-     */
+    /** @throws \RuntimeException when booking has no paid payment */
     public function refund(Booking $booking, float $amount = 0.0): array
     {
         $payment = Payment::where('booking_id', $booking->id)->paid()->first();
@@ -101,14 +74,10 @@ class PaymentService
         }
 
         $refundAmount = $amount > 0 ? $amount : (float) $payment->amount;
-        $gateway      = $this->gateway($payment->method);
 
-        return $gateway->refund($payment, $refundAmount);
+        return $this->gateway($payment->method)->refund($payment, $refundAmount);
     }
 
-    /**
-     * Look up an existing payment for a booking.
-     */
     public function forBooking(Booking $booking): ?Payment
     {
         return Payment::where('booking_id', $booking->id)->latest()->first();

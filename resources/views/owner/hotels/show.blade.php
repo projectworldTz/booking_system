@@ -5,8 +5,7 @@
 @section('content')
 <div class="mb-4 flex items-center gap-2">
     <a href="{{ route('owner.hotels.index') }}" class="btn-ghost btn-sm">{{ __('← My Hotels') }}</a>
-    <a href="{{ route('owner.hotels.coupons.index', $hotel) }}" class="btn-ghost btn-sm ml-auto">{{ __('Coupons') }}</a>
-    <a href="{{ route('owner.hotels.staff.index', $hotel) }}" class="btn-ghost btn-sm">{{ __('Staff') }}</a>
+    <a href="{{ route('owner.hotels.staff.index', $hotel) }}" class="btn-ghost btn-sm ml-auto">{{ __('Staff') }}</a>
     @if($hotel->hasFeature('housekeeping'))
     <a href="{{ route('owner.housekeeping.index', $hotel) }}" class="btn-ghost btn-sm">🧹 {{ __('Housekeeping') }}</a>
     @endif
@@ -53,13 +52,77 @@
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ $hotel->name }}</h2>
                     <p class="text-slate-500">{{ $hotel->city }}, {{ $hotel->country }}</p>
                 </div>
-                <span class="badge badge-{{ $hotel->status === 'active' ? 'active' : ($hotel->status === 'suspended' ? 'suspended' : 'pending-hotel') }}">
-                    {{ ucfirst($hotel->status) }}
-                </span>
+                <div class="flex items-center gap-2">
+                    <span class="badge badge-{{ $hotel->status === 'active' ? 'active' : ($hotel->status === 'suspended' ? 'suspended' : 'pending-hotel') }}">
+                        {{ ucfirst($hotel->status) }}
+                    </span>
+                    <form method="POST" action="{{ route('owner.hotels.toggle-online-booking', $hotel) }}">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors
+                                {{ $hotel->online_booking_enabled
+                                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600' }}">
+                            <span class="h-1.5 w-1.5 rounded-full {{ $hotel->online_booking_enabled ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
+                            {{ $hotel->online_booking_enabled ? 'Online Booking On' : 'Online Booking Off' }}
+                        </button>
+                    </form>
+                </div>
             </div>
             @if($hotel->description)
                 <p class="text-sm text-slate-600 dark:text-slate-300">{{ $hotel->description }}</p>
             @endif
+        </div>
+
+        {{-- Payment Methods --}}
+        @php
+            $allMethods = [
+                'airtel_money' => ['label' => 'Airtel Money', 'color' => 'bg-red-500',     'abbr' => 'AM'],
+                'mpesa'        => ['label' => 'M-Pesa',       'color' => 'bg-emerald-600', 'abbr' => 'MP'],
+                'halotel'      => ['label' => 'Halotel',      'color' => 'bg-orange-500',  'abbr' => 'HL'],
+                'mix_by_yas'   => ['label' => 'Mix by Yas',   'color' => 'bg-blue-600',    'abbr' => 'MX'],
+            ];
+            $enabled = $hotel->enabledPaymentMethods();
+        @endphp
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Payment Methods') }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {{ __('Choose which mobile money providers guests can use to pay.') }}
+                    </p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('owner.hotels.payment-methods.update', $hotel) }}">
+                @csrf
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach($allMethods as $key => $method)
+                    @php $isEnabled = in_array($key, $enabled); @endphp
+                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3.5 transition-all
+                                  {{ $isEnabled
+                                     ? 'border-navy bg-navy/5 dark:border-navy-light dark:bg-navy/10'
+                                     : 'border-slate-200 dark:border-slate-700' }}">
+                        <input type="checkbox" name="payment_methods[]" value="{{ $key }}"
+                               {{ $isEnabled ? 'checked' : '' }}
+                               class="rounded border-slate-300 text-navy focus:ring-navy">
+                        <span class="h-9 w-9 rounded-full {{ $method['color'] }} flex items-center justify-center text-white font-bold text-xs shrink-0">
+                            {{ $method['abbr'] }}
+                        </span>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $method['label'] }}</span>
+                    </label>
+                    @endforeach
+                </div>
+
+                <div class="mt-4 flex items-center justify-between">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ count($enabled) }} of {{ count($allMethods) }} {{ __('methods enabled') }}
+                    </p>
+                    <button type="submit" class="btn-outline btn-sm">
+                        {{ __('Save Payment Methods') }}
+                    </button>
+                </div>
+            </form>
         </div>
 
         {{-- Hotel Photos --}}

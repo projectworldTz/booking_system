@@ -8,23 +8,65 @@ class StoreBookingRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        // Normalize: strip country code, spaces, dashes, then strip leading 0
+        $phone = preg_replace('/[\s\-\(\)\+]/', '', $this->input('phone_number', ''));
+        if (str_starts_with($phone, '255')) {
+            $phone = substr($phone, 3);
+        }
+        $phone = ltrim($phone, '0');
+        $this->merge(['phone_number' => $phone]);
+    }
+
     public function rules(): array
     {
         return [
             'guests_adults'    => ['required', 'integer', 'min:1', 'max:20'],
             'guests_children'  => ['integer', 'min:0', 'max:10'],
             'special_requests' => ['nullable', 'string', 'max:1000'],
-            'coupon_code'      => ['nullable', 'string', 'max:50'],
-            'payment_method'   => ['required', 'in:stripe,paypal,bank,cash'],
+            'payment_method'   => ['required', 'in:airtel_money,mpesa,halotel,mix_by_yas'],
+            'phone_number'     => ['required', 'digits:9', 'regex:/^[67]\d{8}$/', $this->phoneNetworkRule()],
             'agree_terms'      => ['required', 'accepted'],
         ];
+    }
+
+    private function phoneNetworkRule(): \Closure
+    {
+        $prefixMap = [
+            'airtel_money' => ['68', '69', '78'],
+            'mpesa'        => ['74', '75', '76'],
+            'halotel'      => ['62'],
+            'mix_by_yas'   => ['71'],
+        ];
+
+        $hintMap = [
+            'airtel_money' => 'Airtel Money (68x, 69x, 78x)',
+            'mpesa'        => 'M-Pesa (74x, 75x, 76x)',
+            'halotel'      => 'Halotel (62x)',
+            'mix_by_yas'   => 'Mix by Yas (71x)',
+        ];
+
+        $method  = $this->input('payment_method');
+        $allowed = $prefixMap[$method] ?? [];
+
+        return function (string $attribute, mixed $value, \Closure $fail) use ($method, $allowed, $hintMap) {
+            if (empty($allowed)) return;
+            foreach ($allowed as $prefix) {
+                if (str_starts_with($value, $prefix)) return;
+            }
+            $fail('This number is not registered on ' . ($hintMap[$method] ?? $method) . '.');
+        };
     }
 
     public function messages(): array
     {
         return [
-            'agree_terms.accepted' => 'You must accept the terms and conditions.',
-            'payment_method.in'    => 'Please select a valid payment method.',
+            'agree_terms.accepted'   => 'You must accept the terms and conditions.',
+            'payment_method.in'      => 'Please select a valid payment method.',
+            'phone_number.required'  => 'Please enter your mobile money phone number.',
+            'phone_number.digits'    => 'Phone number must be exactly 9 digits after +255 (e.g. 712 345 678).',
+            'phone_number.regex'     => 'Tanzanian numbers must start with 6 or 7.',
         ];
     }
 }

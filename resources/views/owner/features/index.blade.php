@@ -54,20 +54,26 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @foreach($features as $feature)
         @php
-            $isGranted  = isset($granted[$feature->value]) && $granted[$feature->value]->isActive();
-            $req        = $requests[$feature->value] ?? null;
-            $isPending  = $req && $req->isPending();
-            $isDenied   = $req && $req->isDenied();
+            $isGranted    = isset($granted[$feature->value]) && $granted[$feature->value]->isActive();
+            $req          = $requests[$feature->value] ?? null;
+            $isPending    = $req && $req->isPending();
+            $isDenied     = $req && $req->isDenied();
+            $isComingSoon = !$feature->isLive();
         @endphp
 
         <div class="relative rounded-2xl border bg-white dark:bg-slate-800 p-5 transition
             {{ $isGranted
                 ? 'border-emerald-200 dark:border-emerald-700 ring-1 ring-emerald-100 dark:ring-emerald-900/40'
-                : 'border-slate-200 dark:border-slate-700' }}">
+                : ($isComingSoon ? 'border-slate-100 dark:border-slate-700/50 opacity-80' : 'border-slate-200 dark:border-slate-700') }}">
 
             {{-- Status badge top-right --}}
             <div class="absolute top-3 right-3">
-                @if($isGranted)
+                @if($isComingSoon)
+                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-0.5 text-xs font-bold text-slate-500 dark:text-slate-400">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Coming Soon
+                    </span>
+                @elseif($isGranted)
                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
                         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                         Active
@@ -151,6 +157,12 @@
                 </div>
 
             {{-- Not requested yet --}}
+            @elseif($isComingSoon)
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <p class="text-xs text-slate-400 dark:text-slate-500 italic">
+                        This feature is currently in development. It will be available to request once released.
+                    </p>
+                </div>
             @else
                 <div class="mt-3" x-data="{ open: false }">
                     <button @click="open = !open"

@@ -16,6 +16,7 @@
         <form method="GET" action="{{ route('receptionist.bookings.index') }}" class="flex gap-2">
             <input type="hidden" name="status" value="{{ $status }}">
             <input type="text" name="search" value="{{ $search }}" placeholder="{{ __('Search name / booking #') }}"
+                   data-live-search
                    class="form-input w-52">
             <button type="submit" class="btn-outline btn-sm">{{ __('Search') }}</button>
         </form>

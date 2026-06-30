@@ -18,14 +18,14 @@
         </div>
     @else
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        @foreach($favorites as $hotel)
+        @foreach($favorites as $fav)
         <div class="card group hover:shadow-xl transition">
             <div class="relative h-44 overflow-hidden bg-slate-200 dark:bg-slate-700">
-                @if($hotel->featuredImage)
-                    <img src="{{ $hotel->featuredImage->url }}" alt="{{ $hotel->name }}"
+                @if($fav->featuredImage)
+                    <img src="{{ $fav->featuredImage->url }}" alt="{{ $fav->name }}"
                          class="h-full w-full object-cover group-hover:scale-105 transition duration-300">
                 @endif
-                <form method="POST" action="{{ route('favorites.destroy', $hotel) }}"
+                <form method="POST" action="{{ route('favorites.destroy', $fav) }}"
                       class="absolute top-2 right-2">
                     @csrf
                     @method('DELETE')
@@ -38,16 +38,16 @@
                 </form>
             </div>
             <div class="p-4">
-                <a href="{{ route('hotels.show', $hotel) }}"
+                <a href="{{ route('hotels.show', $fav) }}"
                    class="font-bold text-slate-900 dark:text-white hover:text-navy dark:hover:text-navy-light transition line-clamp-1">
-                    {{ $hotel->name }}
+                    {{ $fav->name }}
                 </a>
-                <p class="mt-1 text-sm text-slate-500">{{ $hotel->city }}, {{ $hotel->country }}</p>
+                <p class="mt-1 text-sm text-slate-500">{{ $fav->city }}, {{ $fav->country }}</p>
                 <div class="mt-3 flex items-center justify-between">
-                    @if($hotel->average_rating)
-                        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">★ {{ number_format($hotel->average_rating, 1) }}</span>
+                    @if($fav->average_rating)
+                        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">★ {{ number_format($fav->average_rating, 1) }}</span>
                     @else <span></span> @endif
-                    <a href="{{ route('hotels.show', $hotel) }}" class="btn-primary btn-sm">{{ __('Book Now') }}</a>
+                    <a href="{{ route('hotels.show', $fav) }}" class="btn-primary btn-sm">{{ __('Book Now') }}</a>
                 </div>
             </div>
         </div>

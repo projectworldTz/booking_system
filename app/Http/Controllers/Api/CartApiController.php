@@ -70,31 +70,12 @@ class CartApiController extends Controller
         ]);
     }
 
-    public function applyCoupon(Request $request)
-    {
-        $request->validate(['code' => 'required|string|max:50']);
-
-        $cart    = $this->bookingService->getCart(auth()->user());
-        $hotelId = $cart->items->first()?->roomType?->hotel_id;
-
-        return response()->json(
-            $this->bookingService->applyCouponPreview(auth()->user(), $request->code, $hotelId)
-        );
-    }
-
     public function preview(Request $request)
     {
-        $cart   = $this->bookingService->getCart(auth()->user());
-        $coupon = null;
-
-        if ($request->filled('coupon_code')) {
-            $coupon = \App\Models\Coupon::where('code', strtoupper($request->coupon_code))
-                ->valid()
-                ->first();
-        }
+        $cart = $this->bookingService->getCart(auth()->user());
 
         return response()->json(
-            $this->pricingService->calculateOrderTotal((float) $cart->sub_total, $coupon)
+            $this->pricingService->calculateOrderTotal((float) $cart->sub_total)
         );
     }
 }

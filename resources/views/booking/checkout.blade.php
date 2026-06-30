@@ -7,11 +7,25 @@
         <h1 class="page-title">{{ __('Checkout') }}</h1>
     </div>
 
-    <form method="POST" action="{{ route('booking.store') }}" x-data="{ payment: 'stripe' }">
+    @if($errors->any())
+    <div class="mb-5 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
+        <ul class="list-disc list-inside space-y-0.5">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    <form method="POST" action="{{ route('booking.store') }}"
+          x-data="checkoutForm()"
+          @submit.prevent="submit($event)">
+        {{-- Alpine.js component handles submit loading state --}}
         @csrf
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="lg:col-span-2 space-y-5">
-                {{-- Guest details --}}
+
+                {{-- Guest Details --}}
                 <div class="card p-6">
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">{{ __('Guest Details') }}</h2>
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -28,71 +42,175 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <label class="form-label">{{ __('Special Requests') }} <span class="font-normal text-slate-400">({{ __('optional') }})</span></label>
+                        <label class="form-label">
+                            {{ __('Special Requests') }}
+                            <span class="font-normal text-slate-400">({{ __('optional') }})</span>
+                        </label>
                         <textarea name="special_requests" rows="3" class="form-textarea"
                                   placeholder="{{ __('e.g. early check-in, ground floor, dietary requirements…') }}">{{ old('special_requests') }}</textarea>
                     </div>
                 </div>
 
-                {{-- Payment method --}}
+                {{-- Payment Method --}}
                 <div class="card p-6">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">{{ __('Payment Method') }}</h2>
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-1">{{ __('Payment Method') }}</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ __('Select your mobile money provider') }}</p>
+                    @error('payment_method') <p class="form-error mb-3">{{ $message }}</p> @enderror
+
+                    @php
+                        $methodMeta = [
+                            'airtel_money' => ['color' => 'bg-red-500',     'text' => 'text-red-600 dark:text-red-400',           'abbr' => 'AM'],
+                            'mpesa'        => ['color' => 'bg-emerald-600', 'text' => 'text-emerald-600 dark:text-emerald-400',    'abbr' => 'MP'],
+                            'halotel'      => ['color' => 'bg-orange-500',  'text' => 'text-orange-600 dark:text-orange-400',      'abbr' => 'HL'],
+                            'mix_by_yas'   => ['color' => 'bg-blue-600',    'text' => 'text-blue-600 dark:text-blue-400',          'abbr' => 'MX'],
+                        ];
+                    @endphp
+
+                    @if(empty($gateways))
+                    <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 p-4 text-sm text-amber-800 dark:text-amber-200">
+                        {{ __('No payment methods are currently available for this hotel. Please contact the hotel.') }}
+                    </div>
+                    @else
+                    {{-- Hidden input carries the selected value on submit --}}
+                    <input type="hidden" name="payment_method" :value="payment">
+
                     <div class="grid gap-3 sm:grid-cols-2">
-                        @foreach([
-                            ['stripe',  __('Credit / Debit Card'), 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'],
-                            ['paypal',  'PayPal',               'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
-                            ['bank',    __('Bank Transfer'),        'M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z'],
-                            ['cash',    __('Pay at Hotel'),         'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
-                        ] as [$val, $label, $icon])
-                        <label class="flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition"
-                               :class="payment === '{{ $val }}'
-                                   ? 'border-navy bg-navy/5 dark:border-navy-light dark:bg-navy/10'
-                                   : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'">
-                            <input type="radio" name="payment_method" value="{{ $val }}"
-                                   x-model="payment" class="sr-only">
-                            <svg class="h-5 w-5 shrink-0" :class="payment === '{{ $val }}' ? 'text-navy dark:text-navy-light' : 'text-slate-400'"
-                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
-                            </svg>
-                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $label }}</span>
-                            <div class="ml-auto" :class="payment === '{{ $val }}' ? '' : 'invisible'">
-                                <svg class="h-4 w-4 text-navy dark:text-navy-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        @foreach($gateways as $gateway)
+                        @php $meta = $methodMeta[$gateway['key']] ?? ['color' => 'bg-slate-500', 'text' => 'text-slate-500', 'abbr' => '?']; @endphp
+                        <button type="button"
+                                @click="payment = '{{ $gateway['key'] }}'"
+                                class="flex w-full items-center gap-3 rounded-xl border-2 p-4 transition-all text-left"
+                                :class="payment === '{{ $gateway['key'] }}'
+                                    ? 'border-navy bg-navy/5 dark:border-navy-light dark:bg-navy/10 shadow-sm'
+                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'">
+                            @if(file_exists(public_path('images/payments/' . $gateway['key'] . '.png')))
+                            <img src="{{ asset('images/payments/' . $gateway['key'] . '.png') }}"
+                                 alt="{{ $gateway['label'] }}"
+                                 class="h-10 w-10 rounded-full object-contain shrink-0 shadow-sm">
+                            @else
+                            <span class="h-10 w-10 rounded-full {{ $meta['color'] }} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm">
+                                {{ $meta['abbr'] }}
+                            </span>
+                            @endif
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $gateway['label'] }}</p>
+                                <p class="text-xs {{ $meta['text'] }}">Mobile Money</p>
+                            </div>
+                            <div :class="payment === '{{ $gateway['key'] }}' ? 'opacity-100' : 'opacity-0'" class="transition-opacity shrink-0">
+                                <svg class="h-5 w-5 text-navy dark:text-navy-light" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
-                        </label>
+                        </button>
                         @endforeach
+                    </div>
+                    @endif
+
+                    {{-- Phone number panel — slides in when a method is selected --}}
+                    <div x-show="payment !== ''"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-cloak
+                         class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+
+                        <label class="form-label">
+                            {{ __('Phone Number') }}
+                            <span x-text="providerLabel ? '(' + providerLabel + ')' : ''"></span>
+                        </label>
+
+                        {{-- Valid prefix hint per provider --}}
+                        <p class="mb-2 text-xs text-slate-500 dark:text-slate-400" x-text="prefixHint"></p>
+
+                        <div class="flex rounded-lg overflow-hidden border-2 transition-colors"
+                             :class="phoneTouched && phoneError
+                                ? 'border-rose-400'
+                                : (phone.length === 9 && !phoneError
+                                    ? 'border-emerald-400'
+                                    : 'border-slate-300 dark:border-slate-600 focus-within:border-navy dark:focus-within:border-navy-light')">
+                            <span class="inline-flex items-center px-3 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-mono border-r-2 border-slate-300 dark:border-slate-600 select-none shrink-0">
+                                +255
+                            </span>
+                            <input type="tel" name="phone_number"
+                                   :value="phone"
+                                   @input="handlePhoneInput($event)"
+                                   @blur="phoneTouched = true"
+                                   placeholder="7XX XXX XXX"
+                                   maxlength="9"
+                                   inputmode="numeric"
+                                   class="flex-1 px-3 py-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none font-mono tracking-widest">
+                            <span class="inline-flex items-center pr-3 shrink-0">
+                                <svg x-show="phone.length === 9 && !phoneError"
+                                     class="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <svg x-show="phoneTouched && phoneError"
+                                     class="h-5 w-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                        </div>
+
+                        <p x-show="phoneTouched && phoneError" x-text="phoneError"
+                           class="form-error mt-1" x-cloak></p>
+                        @error('phone_number')
+                        <p class="form-error mt-1">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            {{ __('Enter 9 digits only — no leading 0 or country code.') }}
+                        </p>
+
+                        {{-- Amount notice --}}
+                        <div class="mt-3 flex items-center gap-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3">
+                            <svg class="h-5 w-5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <p class="text-sm text-amber-800 dark:text-amber-200">
+                                {{ __('You will be charged') }}
+                                <strong class="font-bold">TZS {{ number_format(($cart->sub_total ?? 0) - ($cart->discount ?? 0), 0) }}</strong>
+                                {{ __('via') }} <span x-text="providerLabel"></span>.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Terms --}}
-                <label class="flex cursor-pointer items-start gap-3">
-                    <input type="checkbox" name="agree_terms" value="1"
-                           class="mt-0.5 rounded border-slate-300 text-navy @error('agree_terms') border-rose-500 @enderror">
-                    <span class="text-sm text-slate-600 dark:text-slate-300">
-                        {{ __('I agree to the') }} <a href="#" class="text-navy underline">{{ __('Terms of Service') }}</a> {{ __('and') }}
-                        <a href="#" class="text-navy underline">{{ __('Cancellation Policy') }}</a>.
-                    </span>
-                </label>
-                @error('agree_terms') <p class="form-error -mt-1">{{ $message }}</p> @enderror
+                <div>
+                    <label class="flex cursor-pointer items-start gap-3">
+                        <input type="checkbox" name="agree_terms" value="1"
+                               class="mt-0.5 rounded border-slate-300 text-navy @error('agree_terms') border-rose-500 @enderror">
+                        <span class="text-sm text-slate-600 dark:text-slate-300">
+                            {{ __('I agree to the') }}
+                            <a href="#" class="text-navy dark:text-navy-light underline">{{ __('Terms of Service') }}</a>
+                            {{ __('and') }}
+                            <a href="#" class="text-navy dark:text-navy-light underline">{{ __('Cancellation Policy') }}</a>.
+                        </span>
+                    </label>
+                    @error('agree_terms') <p class="form-error mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
 
-            {{-- Order summary --}}
+            {{-- Order Summary --}}
             <div>
                 <div class="card p-5 sticky top-20">
-                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ __('Summary') }}</h3>
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ __('Order Summary') }}</h3>
+
                     @foreach($cart->items as $item)
                     <div class="mb-3 pb-3 border-b border-slate-100 dark:border-slate-700 last:border-0 last:mb-0 last:pb-0">
                         <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $item->roomType->name ?? __('Room') }}</p>
-                        <p class="text-xs text-slate-500">{{ $item->roomType->hotel->name ?? '' }}</p>
-                        <div class="mt-1 flex justify-between text-xs text-slate-500">
-                            <span>{{ \Carbon\Carbon::parse($item->check_in)->format('d M') }} – {{ \Carbon\Carbon::parse($item->check_out)->format('d M Y') }}</span>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $item->roomType->hotel->name ?? '' }}</p>
+                        <div class="mt-1 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                            <span>
+                                {{ \Carbon\Carbon::parse($item->check_in)->format('d M') }}
+                                –
+                                {{ \Carbon\Carbon::parse($item->check_out)->format('d M Y') }}
+                            </span>
                             <span class="font-semibold">TZS {{ number_format($item->sub_total ?? 0, 0) }}</span>
                         </div>
                     </div>
                     @endforeach
 
-                    <div class="mt-3 border-t border-slate-100 dark:border-slate-700 pt-3 space-y-1 text-sm">
+                    <div class="mt-3 border-t border-slate-100 dark:border-slate-700 pt-3 space-y-1.5 text-sm">
                         <div class="flex justify-between text-slate-600 dark:text-slate-300">
                             <span>{{ __('Subtotal') }}</span>
                             <span>TZS {{ number_format($cart->sub_total ?? 0, 0) }}</span>
@@ -103,18 +221,129 @@
                             <span>−TZS {{ number_format($cart->discount, 0) }}</span>
                         </div>
                         @endif
-                        <div class="flex justify-between font-bold text-base text-slate-900 dark:text-white pt-1">
+                        <div class="flex justify-between font-bold text-base text-slate-900 dark:text-white pt-1 border-t border-slate-100 dark:border-slate-700">
                             <span>{{ __('Total') }}</span>
                             <span>TZS {{ number_format(($cart->sub_total ?? 0) - ($cart->discount ?? 0), 0) }}</span>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-gold w-full mt-5">
-                        {{ __('Confirm & Book') }}
+                    <button type="submit"
+                            class="btn-gold w-full mt-5 transition-all relative"
+                            :disabled="!canSubmit"
+                            :class="!canSubmit ? 'opacity-60 cursor-not-allowed' : ''">
+                        <span x-show="submitting" class="inline-flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            {{ __('Sending payment request…') }}
+                        </span>
+                        <span x-show="!submitting && payment !== '' && phone !== ''">
+                            {{ __('Pay with') }} <span x-text="providerLabel"></span>
+                        </span>
+                        <span x-show="!submitting && (payment === '' || !isPhoneValid)">
+                            {{ __('Select payment method & enter number') }}
+                        </span>
                     </button>
+
+                    <p class="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
+                        {{ __('You will receive a PIN prompt on your phone after clicking Pay.') }}
+                    </p>
                 </div>
             </div>
         </div>
     </form>
 </div>
+@push('scripts')
+<script>
+function checkoutForm() {
+    return {
+        payment:      '{{ old('payment_method', '') }}',
+        phone:        '{{ old('phone_number',   '') }}',
+        phoneTouched: false,
+        submitting:   false,
+
+        names: {
+            airtel_money: 'Airtel Money',
+            mpesa:        'M-Pesa',
+            halotel:      'Halotel',
+            mix_by_yas:   'Mix by Yas',
+        },
+
+        // Valid 2-digit prefixes per network
+        prefixes: {
+            airtel_money: ['68', '69', '78'],
+            mpesa:        ['74', '75', '76'],
+            halotel:      ['62'],
+            mix_by_yas:   ['71'],
+        },
+
+        hints: {
+            airtel_money: 'Valid prefixes: 68x, 69x, 78x',
+            mpesa:        'Valid prefixes: 74x, 75x, 76x',
+            halotel:      'Valid prefixes: 62x',
+            mix_by_yas:   'Valid prefixes: 71x',
+        },
+
+        get providerLabel() {
+            return this.names[this.payment] || '';
+        },
+
+        get prefixHint() {
+            return this.hints[this.payment] || '';
+        },
+
+        get isPhoneValid() {
+            if (this.phone.length !== 9) return false;
+            if (!/^\d{9}$/.test(this.phone)) return false;
+            const allowed = this.prefixes[this.payment] || [];
+            return allowed.some(p => this.phone.startsWith(p));
+        },
+
+        get phoneError() {
+            if (this.phone === '') return '';
+            if (!/^\d+$/.test(this.phone)) return 'Only digits are allowed — no spaces or dashes.';
+            if (this.phone.length < 9) return 'Phone number must be exactly 9 digits (e.g. 712 345 678).';
+            const allowed = this.prefixes[this.payment] || [];
+            if (allowed.length && !allowed.some(p => this.phone.startsWith(p))) {
+                const friendly = {
+                    airtel_money: 'Airtel Money (68x, 69x, 78x)',
+                    mpesa:        'M-Pesa (74x, 75x, 76x)',
+                    halotel:      'Halotel (62x)',
+                    mix_by_yas:   'Mix by Yas (71x)',
+                };
+                return 'This number is not registered on ' + (friendly[this.payment] || this.providerLabel) + '.';
+            }
+            return '';
+        },
+
+        get canSubmit() {
+            return this.payment !== '' && this.isPhoneValid && !this.submitting;
+        },
+
+        // Strip country code, leading 0, non-digits; cap at 9 digits
+        normalizePhone(val) {
+            val = val.replace(/\D/g, '');           // digits only
+            if (val.startsWith('255')) val = val.slice(3);
+            if (val.startsWith('0'))   val = val.slice(1);
+            return val.slice(0, 9);
+        },
+
+        handlePhoneInput(e) {
+            this.phone = this.normalizePhone(e.target.value);
+            e.target.value = this.phone;           // keep cursor-friendly
+            this.phoneTouched = true;
+        },
+
+        submit(e) {
+            this.phoneTouched = true;
+            if (!this.canSubmit) return;
+            this.submitting = true;
+            this.$nextTick(() => e.target.submit());
+        },
+    };
+}
+</script>
+@endpush
+
 @endsection

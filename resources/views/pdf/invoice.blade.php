@@ -459,7 +459,7 @@
                     </tr>
                     @if($discountTotal > 0)
                     <tr style="color:#16A34A;">
-                        <td>Discount{{ $booking->coupon_code ? ' ('.$booking->coupon_code.')' : '' }}</td>
+                        <td>Discount</td>
                         <td class="tv">−{{ $currency }} {{ number_format($discountTotal, 0) }}</td>
                     </tr>
                     @endif

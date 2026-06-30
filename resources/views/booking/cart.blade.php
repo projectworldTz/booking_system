@@ -49,7 +49,8 @@
                             TZS {{ number_format($item->sub_total ?? 0, 0) }}
                         </p>
                         <p class="text-xs text-slate-500">TZS {{ number_format($item->roomType->base_price ?? 0, 0) }}/{{ __('night') }}</p>
-                        <form method="POST" action="{{ route('booking.cart.destroy', $item) }}" class="mt-2">
+                        <form method="POST" action="{{ route('booking.cart.destroy', $item) }}" class="mt-2"
+                              data-loading data-confirm="{{ __('Remove this item from your cart?') }}">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-xs text-rose-500 hover:text-rose-700 transition">{{ __('Remove') }}</button>
@@ -62,25 +63,6 @@
 
         {{-- Order summary --}}
         <div class="space-y-4">
-            {{-- Coupon --}}
-            <div class="card p-5" x-data="{ applying: false }">
-                <h3 class="font-bold text-slate-900 dark:text-white mb-3">{{ __('Coupon Code') }}</h3>
-                <form method="POST" action="{{ route('booking.cart.coupon') }}">
-                    @csrf
-                    <div class="flex gap-2">
-                        <input type="text" name="coupon_code"
-                               value="{{ $cart->coupon_code ?? '' }}"
-                               class="form-input flex-1" placeholder="{{ __('Enter code') }}">
-                        <button type="submit" class="btn-outline btn-sm">{{ __('Apply') }}</button>
-                    </div>
-                </form>
-                @if($cart->coupon_code)
-                    <p class="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
-                        {{ __('Coupon') }} "{{ $cart->coupon_code }}" {{ __('applied!') }}
-                    </p>
-                @endif
-            </div>
-
             {{-- Totals --}}
             <div class="card p-5">
                 <h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ __('Order Summary') }}</h3>

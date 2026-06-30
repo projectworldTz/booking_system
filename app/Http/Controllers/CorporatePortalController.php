@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CorporateAccount;
 use App\Models\Hotel;
 use App\Models\RoomType;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CorporatePortalController extends Controller
@@ -21,7 +20,7 @@ class CorporatePortalController extends Controller
 
         $roomTypes = $hotel->roomTypes()
             ->where('status', 'active')
-            ->with('media')
+            ->with('images')
             ->get()
             ->map(function (RoomType $rt) use ($corporate) {
                 $rt->corporate_price = $corporate->applyDiscount((float) $rt->base_price);

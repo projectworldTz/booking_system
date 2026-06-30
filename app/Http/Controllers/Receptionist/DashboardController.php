@@ -36,11 +36,15 @@ class DashboardController extends Controller
             ->count();
 
         $stats = [
-            'arrivals_today'      => $arrivalsToday->count(),
-            'departures_today'    => $departuresToday->count(),
-            'pending_confirm'     => $pendingConfirmation,
-            'currently_in'        => $currentlyCheckedIn,
+            'arrivals_today'   => $arrivalsToday->count(),
+            'departures_today' => $departuresToday->count(),
+            'pending_confirm'  => $pendingConfirmation,
+            'currently_in'     => $currentlyCheckedIn,
         ];
+
+        if ($request->wantsJson()) {
+            return response()->json($stats);
+        }
 
         return view('receptionist.dashboard', compact(
             'hotel', 'stats', 'arrivalsToday', 'departuresToday'

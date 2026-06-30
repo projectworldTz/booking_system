@@ -14,13 +14,14 @@ use App\Repositories\HotelRepository;
 use App\Repositories\RoomRepository;
 use App\Services\AvailabilityService;
 use App\Services\BookingService;
+use App\Services\CancellationService;
 use App\Services\HotelService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
-use App\Services\Payments\BankTransferGateway;
-use App\Services\Payments\CashGateway;
-use App\Services\Payments\PayPalGateway;
-use App\Services\Payments\StripeGateway;
+use App\Services\Payments\AirtelMoneyGateway;
+use App\Services\Payments\HalotelGateway;
+use App\Services\Payments\MixByYasGateway;
+use App\Services\Payments\MpesaGateway;
 use App\Services\PricingService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -35,12 +36,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(BookingRepository::class);
         $this->app->singleton(RoomRepository::class);
         $this->app->singleton(AvailabilityRepository::class);
-
-        // ── Payment gateways ──────────────────────────────────────────────────
-        $this->app->singleton(StripeGateway::class);
-        $this->app->singleton(PayPalGateway::class);
-        $this->app->singleton(BankTransferGateway::class);
-        $this->app->singleton(CashGateway::class);
 
         // ── Services (dependency graph resolved by the container) ─────────────
         $this->app->singleton(PricingService::class);
@@ -62,10 +57,16 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(PaymentService::class, function ($app) {
             return new PaymentService(
-                $app->make(StripeGateway::class),
-                $app->make(PayPalGateway::class),
-                $app->make(BankTransferGateway::class),
-                $app->make(CashGateway::class),
+                $app->make(AirtelMoneyGateway::class),
+                $app->make(MpesaGateway::class),
+                $app->make(HalotelGateway::class),
+                $app->make(MixByYasGateway::class),
+            );
+        });
+
+        $this->app->singleton(CancellationService::class, function ($app) {
+            return new CancellationService(
+                $app->make(AvailabilityRepository::class),
             );
         });
 
@@ -77,6 +78,7 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(AvailabilityService::class),
                 $app->make(PricingService::class),
                 $app->make(InvoiceService::class),
+                $app->make(CancellationService::class),
             );
         });
 

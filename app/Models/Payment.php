@@ -16,13 +16,15 @@ class Payment extends Model
         'status',
         'transaction_id',
         'amount',
+        'refund_amount',
         'currency',
         'metadata',
     ];
 
     protected $casts = [
-        'metadata' => 'array',
-        'amount'   => 'decimal:2',
+        'metadata'      => 'array',
+        'amount'        => 'decimal:2',
+        'refund_amount' => 'decimal:2',
     ];
 
     // status values: pending|paid|failed|refunded|cancelled
@@ -68,11 +70,11 @@ class Payment extends Model
     public function getMethodLabelAttribute(): string
     {
         return match ($this->method) {
-            'stripe'   => 'Credit Card (Stripe)',
-            'paypal'   => 'PayPal',
-            'bank'     => 'Bank Transfer',
-            'cash'     => 'Cash',
-            default    => ucfirst($this->method),
+            'airtel_money' => 'Airtel Money',
+            'mpesa'        => 'M-Pesa',
+            'halotel'      => 'Halotel',
+            'mix_by_yas'   => 'Mix by Yas',
+            default        => ucfirst(str_replace('_', ' ', $this->method)),
         };
     }
 }

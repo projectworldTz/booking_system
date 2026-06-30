@@ -68,8 +68,16 @@
             </div>
             <div class="detail-row">
                 <span class="detail-label">Total Charged</span>
-                <span class="detail-value">${{ number_format($booking->grand_total, 2) }}</span>
+                <span class="detail-value">{{ $booking->currency }} {{ number_format($booking->grand_total, 2) }}</span>
             </div>
+            @if($booking->refund_amount !== null)
+            <div class="detail-row">
+                <span class="detail-label">Refund Amount</span>
+                <span class="detail-value" style="color:#16a34a;font-weight:700;">
+                    {{ $booking->currency }} {{ number_format($booking->refund_amount, 2) }}
+                </span>
+            </div>
+            @endif
             <div class="detail-row">
                 <span class="detail-label">Cancelled On</span>
                 <span class="detail-value">{{ ($booking->cancelled_at ?? now())->format('d M Y, H:i') }}</span>
@@ -82,10 +90,25 @@
         </div>
         @endif
 
+        @if($booking->refund_amount > 0)
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px 18px;margin-bottom:24px;font-size:14px;color:#166534;">
+            <strong>&#10003; Refund Approved:</strong>
+            You will receive <strong>{{ $booking->currency }} {{ number_format($booking->refund_amount, 2) }}</strong>
+            back to your <strong>{{ $booking->payment?->method_label ?? 'original payment method' }}</strong>.
+            Our team will process the transfer within <strong>2–3 business days</strong>.
+            If you do not receive it, please contact us quoting booking <strong>#{{ $booking->booking_number }}</strong>.
+        </div>
+        @elseif($booking->payment && $booking->payment->status === 'paid')
+        <div class="note">
+            <strong>No Refund:</strong>
+            Based on our cancellation policy, this booking is not eligible for a refund
+            as it was cancelled less than 24 hours before check-in.
+        </div>
+        @else
         <p class="para">
-            If a refund is applicable per our cancellation policy, it will be processed within
-            5–10 business days to your original payment method.
+            Since payment had not yet been confirmed, you have not been charged for this booking.
         </p>
+        @endif
 
         <div class="actions">
             <a href="{{ route('hotels.index') }}" class="btn">Browse Hotels Again</a>

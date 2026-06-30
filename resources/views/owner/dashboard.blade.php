@@ -3,6 +3,14 @@
 @section('page-title', __('Owner Dashboard'))
 
 @section('content')
+
+{{-- Auto-refresh indicator --}}
+<div class="flex items-center justify-end mb-3 text-xs text-slate-400 dark:text-slate-500 gap-1.5">
+    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span>{{ __('Live data') }}</span>
+    <span id="owner-refresh-countdown" class="tabular-nums">↻ 120s</span>
+</div>
+
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
     @foreach([
         [__('My Hotels'),       $stats['hotels']    ?? 0, 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
@@ -72,3 +80,18 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    let countdown = 120;
+    const indicator = document.getElementById('owner-refresh-countdown');
+    const tick = setInterval(() => {
+        if (document.hidden) return;
+        countdown--;
+        if (indicator) indicator.textContent = '↻ ' + countdown + 's';
+        if (countdown <= 0) { clearInterval(tick); window.location.reload(); }
+    }, 1000);
+})();
+</script>
+@endpush

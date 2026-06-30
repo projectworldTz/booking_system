@@ -33,9 +33,13 @@ class BookingController extends Controller
                 ->with('warning', 'Your cart is empty. Please select a room first.');
         }
 
-        $gateways = $this->paymentService->availableGateways();
+        // Resolve which payment methods the hotel owner has enabled
+        $hotel           = $cart->items->first()?->roomType?->hotel;
+        $enabledKeys     = $hotel ? $hotel->enabledPaymentMethods() : \App\Models\Hotel::ALL_PAYMENT_METHODS;
+        $allGateways     = $this->paymentService->availableGateways();
+        $gateways        = array_filter($allGateways, fn($g) => in_array($g['key'], $enabledKeys));
 
-        return view('booking.checkout', compact('cart', 'gateways'));
+        return view('booking.checkout', compact('cart', 'gateways', 'hotel'));
     }
 
     /**
@@ -53,45 +57,20 @@ class BookingController extends Controller
         }
 
         $paymentMethod   = $request->validated()['payment_method'];
-        $paymentResponse = $this->paymentService->initiate(
-            $booking,
-            $paymentMethod,
-            $request->only(['stripe_token', 'paypal_order_id'])
-        );
+        $phoneNumber     = $request->validated()['phone_number'];
 
-        // Cash / bank transfer: confirm immediately, then email
-        if (in_array($paymentMethod, ['cash', 'bank'], true)) {
-            $this->bookingService->confirm($booking);
-            $booking->refresh();
-            event(new BookingCreated($booking));
-
-            $flash = ['booking_success' => true, 'success' => $paymentResponse['message']];
-
-            // Bank transfer: include bank account details for the user to action
-            if ($paymentMethod === 'bank' && ! empty($paymentResponse['bank_details'])) {
-                $flash['bank_details'] = $paymentResponse['bank_details'];
-            }
-
-            return redirect()
-                ->route('booking.show', $booking->booking_number)
-                ->with($flash);
-        }
-
-        // Stripe / PayPal with a redirect URL (real gateway integration)
-        if (! empty($paymentResponse['redirect_url'])) {
-            return redirect($paymentResponse['redirect_url']);
-        }
-
-        // Stub path: gateway accepted without redirect — confirm immediately
-        if ($paymentResponse['success']) {
-            $this->bookingService->confirm($booking);
-            $booking->refresh();
-            event(new BookingCreated($booking));
-        }
+        $paymentResponse = $this->paymentService->initiate($booking, $paymentMethod, [
+            'phone_number' => $phoneNumber,
+        ]);
 
         return redirect()
             ->route('booking.show', $booking->booking_number)
-            ->with(['booking_success' => true, 'success' => 'Booking placed successfully!']);
+            ->with([
+                'payment_pending'  => true,
+                'payment_phone'    => $phoneNumber,
+                'payment_provider' => $paymentMethod,
+                'payment_message'  => $paymentResponse['message'],
+            ]);
     }
 
     /**
@@ -120,13 +99,39 @@ class BookingController extends Controller
         abort_unless($booking->user_id === Auth::id(), 403);
 
         try {
-            $this->bookingService->cancel($booking, $request->input('reason', ''));
+            $booking = $this->bookingService->cancel($booking, $request->input('reason', ''));
         } catch (\RuntimeException $e) {
             return back()->withErrors(['cancel' => $e->getMessage()]);
         }
 
-        return redirect()->route('account.bookings')
-            ->with('success', "Booking #{$booking->booking_number} has been cancelled.");
+        $refund  = $booking->refund_amount;
+        $message = $refund > 0
+            ? "Booking #{$booking->booking_number} cancelled. Refund of {$booking->currency} " . number_format((float) $refund, 2) . " will be transferred within 2–3 business days."
+            : "Booking #{$booking->booking_number} has been cancelled.";
+
+        return redirect()->route('account.bookings')->with('success', $message);
+    }
+
+    /**
+     * Development-only: simulate a successful mobile money payment confirmation.
+     * This endpoint is disabled in production.
+     */
+    public function devConfirmPayment(\App\Models\Payment $payment)
+    {
+        abort_unless(app()->environment(['local', 'staging']), 404);
+
+        $this->paymentService->verify($payment, [
+            'transaction_id' => 'DEV-SIM-' . now()->format('YmdHis'),
+        ]);
+
+        $booking = $payment->booking;
+        $this->bookingService->confirm($booking);
+        $booking->refresh();
+        event(new BookingCreated($booking));
+
+        return redirect()
+            ->route('booking.show', $booking->booking_number)
+            ->with(['success' => 'Payment confirmed (development simulation).']);
     }
 
     /**
