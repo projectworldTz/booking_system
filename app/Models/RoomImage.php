@@ -23,29 +23,25 @@ class RoomImage extends Model
 
     /**
      * Always return a fully-qualified URL regardless of what is stored.
-     * Priority: url column (if set) → reconstruct from path → empty string.
+     * Priority: unsplash reconstruction → stored url column → empty string.
+     *
+     * Doesn't rebuild from `path` via the local `/storage/...` convention,
+     * since uploads may be served from S3 or another disk in production —
+     * the `url` column (set at upload time from the active disk) is canonical.
      */
     public function getUrlAttribute(): string
     {
         $stored = $this->attributes['url'] ?? '';
         $path   = $this->attributes['path'] ?? '';
 
-        // Unsplash images — reconstruct from path first (path is canonical)
         if (str_starts_with($path, 'unsplash/')) {
             return 'https://images.unsplash.com/photo-' . substr($path, strlen('unsplash/'));
         }
 
-        // Local uploaded file — always regenerate from path so the URL is
-        // correct regardless of what APP_URL was set to at upload time.
-        if ($path && !str_starts_with($path, 'http')) {
-            return asset('storage/' . ltrim($path, '/'));
-        }
-
-        // External URL stored directly in url column
         if (str_starts_with($stored, 'http')) {
             return $stored;
         }
 
-        return '';
+        return $stored ? asset($stored) : '';
     }
 }

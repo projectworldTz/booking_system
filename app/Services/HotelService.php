@@ -115,7 +115,7 @@ class HotelService
 
         return $hotel->images()->create([
             'path'        => $path,
-            'url'         => Storage::url($path),
+            'url'         => Storage::disk('public')->url($path),
             'is_featured' => $featured || $hotel->images()->count() === 0,
             'sort_order'  => $hotel->images()->max('sort_order') + 1,
         ]);

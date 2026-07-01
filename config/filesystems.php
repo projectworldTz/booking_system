@@ -38,7 +38,23 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+        // Publicly-served uploads (hotel/room photos). Backed by local disk in
+        // dev, and switchable to S3-compatible storage in production via
+        // FILESYSTEM_PUBLIC_DRIVER=s3, since uploads written to local disk on
+        // Laravel Cloud don't survive redeploys.
+        'public' => env('FILESYSTEM_PUBLIC_DRIVER', 'local') === 's3' ? [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ] : [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',

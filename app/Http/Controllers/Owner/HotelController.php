@@ -130,7 +130,7 @@ class HotelController extends Controller
                 $path = $file->store("room-types/{$roomType->id}", 'public');
                 $roomType->images()->create([
                     'path'       => $path,
-                    'url'        => \Illuminate\Support\Facades\Storage::url($path),
+                    'url'        => Storage::disk('public')->url($path),
                     'sort_order' => $index,
                 ]);
             }
@@ -212,7 +212,7 @@ class HotelController extends Controller
             $path = $file->store("room-types/{$roomType->id}", 'public');
             $roomType->images()->create([
                 'path'        => $path,
-                'url'         => Storage::url($path),
+                'url'         => Storage::disk('public')->url($path),
                 'sort_order'  => $nextOrder + $index,
                 'is_featured' => $roomType->images()->count() === 0,
             ]);
