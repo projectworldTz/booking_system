@@ -299,8 +299,8 @@
             @if($hotel->roomTypes->isEmpty())
                 <p class="p-5 text-sm text-slate-500">{{ __('No room types added yet.') }}</p>
             @else
-            @foreach($hotel->roomTypes->load('images') as $rt)
-            <div x-data="{ photosOpen: false }" class="border-b border-slate-100 dark:border-slate-700 last:border-0">
+            @foreach($hotel->roomTypes->load(['images', 'rooms']) as $rt)
+            <div x-data="{ photosOpen: false, roomsOpen: false }" class="border-b border-slate-100 dark:border-slate-700 last:border-0">
                 {{-- Room type row --}}
                 <div class="flex items-center gap-3 px-4 py-3">
                     {{-- Cover thumbnail --}}
@@ -328,6 +328,21 @@
                         <span>{{ $rt->images->count() }} {{ __('photos') }}</span>
                     </div>
 
+                    {{-- Rooms toggle --}}
+                    <button @click="roomsOpen = !roomsOpen"
+                            class="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21V6.75A2.25 2.25 0 016 4.5h12a2.25 2.25 0 012.25 2.25V21M3.75 21h16.5M3.75 21v-3.375c0-.621.504-1.125 1.125-1.125h14.25c.621 0 1.125.504 1.125 1.125V21M9 6.75h6M9 12h6"/>
+                        </svg>
+                        {{ __('Rooms') }}
+                        @if($rt->rooms->isEmpty())
+                        <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                        @endif
+                        <svg class="h-3 w-3 transition-transform" :class="roomsOpen && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
                     {{-- Photos toggle --}}
                     <button @click="photosOpen = !photosOpen"
                             class="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
@@ -339,6 +354,57 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
+                </div>
+
+                {{-- Expandable rooms panel --}}
+                <div x-show="roomsOpen" x-collapse class="px-4 pb-4">
+                    <div class="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 p-4">
+
+                        @if($rt->rooms->isEmpty())
+                        <p class="text-xs text-rose-500 mb-3">{{ __('No physical rooms yet — guests cannot book this room type until you add at least one.') }}</p>
+                        @else
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            @foreach($rt->rooms->sortBy('room_number') as $room)
+                            @php
+                                $statusColor = match ($room->status) {
+                                    'available'      => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                                    'maintenance'    => 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                    'out_of_service' => 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
+                                    default          => 'bg-slate-100 text-slate-500',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium {{ $statusColor }}">
+                                {{ __('Room') }} {{ $room->room_number }}
+                                @if($room->floor)<span class="opacity-60">· {{ __('Floor') }} {{ $room->floor }}</span>@endif
+                            </span>
+                            @endforeach
+                        </div>
+                        @endif
+
+                        {{-- Add room form --}}
+                        <form method="POST" action="{{ route('owner.hotels.rooms.store', [$hotel, $rt]) }}" class="flex flex-wrap items-end gap-2">
+                            @csrf
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ __('Room Number') }}</label>
+                                <input type="text" name="room_number" required maxlength="20"
+                                       class="w-28 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-2.5 py-1.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ __('Floor') }}</label>
+                                <input type="number" name="floor"
+                                       class="w-20 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-2.5 py-1.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ __('Status') }}</label>
+                                <select name="status" class="rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-2.5 py-1.5 text-sm">
+                                    <option value="available">{{ __('Available') }}</option>
+                                    <option value="maintenance">{{ __('Maintenance') }}</option>
+                                    <option value="out_of_service">{{ __('Out of Service') }}</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-primary btn-sm">{{ __('Add Room') }}</button>
+                        </form>
+                    </div>
                 </div>
 
                 {{-- Expandable photos panel --}}
