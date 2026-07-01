@@ -50,11 +50,11 @@
                             x-model="dtype" class="accent-navy"> Fixed amount (TZS off/night)
                     </label>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <input type="number" name="discount_value"
                         value="{{ old('discount_value', 10) }}"
                         min="0" step="0.01"
-                        class="form-input w-36 @error('discount_value') border-rose-400 @enderror"
+                        class="form-input w-full sm:w-36 @error('discount_value') border-rose-400 @enderror"
                         required>
                     <span class="text-sm text-slate-500" x-text="dtype === 'percentage' ? '% off base rate' : 'TZS off per night'"></span>
                 </div>
@@ -64,7 +64,7 @@
             <div>
                 <label class="form-label">Credit Limit (TZS) <span class="text-slate-400 text-xs font-normal">optional — max total spend allowed</span></label>
                 <input type="number" name="credit_limit" value="{{ old('credit_limit') }}"
-                    min="0" step="1000" class="form-input w-48">
+                    min="0" step="1000" class="form-input w-full sm:w-48">
             </div>
 
             <hr class="border-slate-100 dark:border-slate-700">

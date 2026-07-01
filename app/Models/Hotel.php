@@ -115,6 +115,11 @@ class Hotel extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function visits()
+    {
+        return $this->hasMany(HotelVisit::class);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -225,6 +230,23 @@ class Hotel extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /**
+     * The hotel the current guest is scoped to, whether resolved from a
+     * tenant subdomain or, in single-domain setups, the last hotel page visited.
+     */
+    public static function currentForGuest(): ?self
+    {
+        if (app()->bound('current_hotel')) {
+            return app('current_hotel');
+        }
+
+        if ($slug = session('viewing_hotel')) {
+            return static::where('slug', $slug)->where('status', 'active')->first();
+        }
+
+        return null;
     }
 
     public function isOwnedBy(User $user): bool

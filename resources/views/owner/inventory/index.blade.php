@@ -80,7 +80,7 @@
         <form method="GET" class="flex flex-wrap gap-2">
             <input type="text" name="search" value="{{ request('search') }}"
                    placeholder="Name, code, location…"
-                   class="form-input w-48 text-sm">
+                   class="form-input w-full sm:w-48 text-sm">
             <select name="category" class="form-input w-auto text-sm">
                 <option value="">All Categories</option>
                 @foreach($categories as $cat)

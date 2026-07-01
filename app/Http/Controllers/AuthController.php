@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Hotel;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -35,12 +36,14 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        $user = Auth::user();
+        $user  = Auth::user();
+        $hotel = Hotel::currentForGuest();
 
         $default = match (true) {
             $user->isSuperAdmin()                                        => route('admin.dashboard'),
             $user->isHotelOwner()                                        => route('owner.dashboard'),
             $user->hasAnyRole(['receptionist', 'manager', 'cashier'])    => route('receptionist.dashboard'),
+            $hotel !== null                                              => route('hotels.show', $hotel),
             default                                                      => route('dashboard'),
         };
 
@@ -68,17 +71,24 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        $hotel   = Hotel::currentForGuest();
+        $default = $hotel ? route('hotels.show', $hotel) : route('dashboard');
+
+        return redirect()->intended($default);
     }
 
     public function logout(Request $request)
     {
+        $hotel = Hotel::currentForGuest();
+
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return $hotel
+            ? redirect()->route('hotels.show', $hotel)
+            : redirect()->route('home');
     }
 
     // ── Forgot / Reset Password ───────────────────────────────────────────────

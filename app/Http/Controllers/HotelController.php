@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CheckAvailabilityRequest;
 use App\Models\Hotel;
+use App\Models\HotelVisit;
 use App\Services\AvailabilityService;
 use App\Services\HotelService;
 use Illuminate\Http\Request;
@@ -42,6 +43,18 @@ class HotelController extends Controller
         if (app()->bound('current_hotel') && app('current_hotel')->id !== $hotel->id) {
             return redirect()->route('hotels.show', app('current_hotel'));
         }
+
+        // Remember which hotel page the guest is on so login/register/logout
+        // can return them here even without subdomain-based tenant routing.
+        request()->session()->put('viewing_hotel', $hotel->slug);
+
+        $this->recordVisit($hotel);
+
+        // A guest looking at one hotel's page shouldn't see nav links back to
+        // the platform's own marketing site or to other hotels — treat this
+        // as tenant mode for the layout regardless of subdomain vs path access.
+        view()->share('tenantMode', true);
+        view()->share('currentHotel', $hotel);
 
         $hotel->loadMissing([
             'images', 'amenities', 'roomTypes.images', 'roomTypes.amenities',
@@ -90,6 +103,24 @@ class HotelController extends Controller
             'guests'             => $request->guests,
             'room_types'         => array_map(fn ($r) => $formatType($r, true),  $results['available']),
             'unavailable_types'  => array_map(fn ($r) => $formatType($r, false), $results['unavailable']),
+        ]);
+    }
+
+    /**
+     * Log one visit per browser session per hotel per day, for the owner's
+     * "visits per day" analytics. Skips the hotel's own owner so their
+     * dashboard checks don't inflate their own traffic numbers.
+     */
+    private function recordVisit(Hotel $hotel): void
+    {
+        if (auth()->check() && $hotel->isOwnedBy(auth()->user())) {
+            return;
+        }
+
+        HotelVisit::firstOrCreate([
+            'hotel_id'    => $hotel->id,
+            'visitor_key' => request()->session()->getId(),
+            'visited_on'  => now()->toDateString(),
         ]);
     }
 }

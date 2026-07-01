@@ -22,6 +22,10 @@ class RoomController extends Controller
         abort_if($hotel->status !== 'active', 404);
         abort_if($roomType->hotel_id !== $hotel->id, 404);
 
+        request()->session()->put('viewing_hotel', $hotel->slug);
+        view()->share('tenantMode', true);
+        view()->share('currentHotel', $hotel);
+
         $roomType->loadMissing(['images', 'amenities', 'hotel']);
 
         // Calendar data for the current month (for the React calendar component)

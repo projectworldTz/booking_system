@@ -21,7 +21,7 @@
         welcomeMsg: {{ json_encode($welcomeMsg) }},
         csrfToken: {{ json_encode(csrf_token()) }}
     })"
-    class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
+    class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3"
     style="z-index: 9999;"
 >
     {{-- ── Chat Panel ── --}}
@@ -34,7 +34,7 @@
         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
         x-cloak
-        class="w-80 sm:w-96 rounded-2xl shadow-2xl overflow-hidden flex flex-col bg-white dark:bg-slate-800"
+        class="w-80 sm:w-96 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl overflow-hidden flex flex-col bg-white dark:bg-slate-800"
         style="height: 520px; max-height: calc(100vh - 100px);"
     >
         {{-- Header --}}

@@ -13,8 +13,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ __('No bookings found') }}</h3>
-            <p class="mt-1 text-sm text-slate-500">{{ __('Start by browsing our hotels.') }}</p>
-            <a href="{{ route('hotels.index') }}" class="btn-primary mt-5">{{ __('Browse Hotels') }}</a>
+            <p class="mt-1 text-sm text-slate-500">{{ __('Start by browsing available rooms.') }}</p>
+            <a href="{{ route('hotels.index') }}" class="btn-primary mt-5">{{ __('Browse Rooms') }}</a>
         </div>
     @else
     <div class="card table-wrap">

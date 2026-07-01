@@ -125,8 +125,8 @@
                 </div>
             </div>
             @else
-            <a href="{{ route('login') }}" class="btn-ghost btn-sm">{{ __('Sign in') }}</a>
-            <a href="{{ route('register') }}" class="btn-primary btn-sm">{{ __('Sign up') }}</a>
+            <a href="{{ route('login') }}" class="hidden sm:inline-flex btn-ghost btn-sm">{{ __('Sign in') }}</a>
+            <a href="{{ route('register') }}" class="hidden sm:inline-flex btn-primary btn-sm">{{ __('Sign up') }}</a>
             @endauth
 
             {{-- Mobile menu button --}}
@@ -153,6 +153,11 @@
             @unless($tenantMode ?? false)
             <a href="{{ route('favorites.index') }}" class="block py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300">{{ __('Saved Hotels') }}</a>
             @endunless
+        @else
+            <div class="mt-2 flex gap-2 sm:hidden">
+                <a href="{{ route('login') }}" class="btn-ghost btn-sm flex-1 justify-center">{{ __('Sign in') }}</a>
+                <a href="{{ route('register') }}" class="btn-primary btn-sm flex-1 justify-center">{{ __('Sign up') }}</a>
+            </div>
         @endauth
     </div>
 </header>

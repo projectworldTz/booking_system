@@ -12,12 +12,12 @@
         @endforeach
     </div>
 
-    <div class="flex gap-2">
-        <form method="GET" action="{{ route('receptionist.bookings.index') }}" class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
+        <form method="GET" action="{{ route('receptionist.bookings.index') }}" class="flex flex-wrap gap-2">
             <input type="hidden" name="status" value="{{ $status }}">
             <input type="text" name="search" value="{{ $search }}" placeholder="{{ __('Search name / booking #') }}"
                    data-live-search
-                   class="form-input w-52">
+                   class="form-input w-full sm:w-52">
             <button type="submit" class="btn-outline btn-sm">{{ __('Search') }}</button>
         </form>
         <a href="{{ route('receptionist.bookings.create') }}" class="btn-gold btn-sm">+ {{ __('New Booking') }}</a>

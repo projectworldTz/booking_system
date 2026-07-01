@@ -36,7 +36,7 @@
         @if($recentBookings->isEmpty())
             <div class="flex flex-col items-center justify-center py-12 text-center">
                 <p class="text-slate-500">{{ __('No bookings yet.') }}</p>
-                <a href="{{ route('hotels.index') }}" class="btn-primary mt-4">{{ __('Browse Hotels') }}</a>
+                <a href="{{ route('hotels.index') }}" class="btn-primary mt-4">{{ __('Browse Rooms') }}</a>
             </div>
         @else
         <div class="table-wrap">

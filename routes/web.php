@@ -76,8 +76,11 @@ Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
 
 // Hotel browsing — listing removed (SaaS: no global hotel directory)
 Route::prefix('hotels')->name('hotels.')->group(function () {
-    // Redirect the listing to home so old bookmarked URLs don't 404
-    Route::get('/', fn () => redirect()->route('home'))->name('index');
+    // "Browse Hotels" CTAs mean "take me back to the hotel I'm dealing with" in
+    // this single-tenant-per-guest model. Fall back to home only if unresolvable.
+    Route::get('/', fn () => ($hotel = \App\Models\Hotel::currentForGuest())
+        ? redirect()->route('hotels.show', $hotel)
+        : redirect()->route('home'))->name('index');
     Route::get('/{hotel}', [HotelController::class, 'show'])->name('show');
     Route::get('/{hotel}/availability', [HotelController::class, 'availability'])->name('availability');
     Route::get('/{hotel}/rooms/{roomType}', [RoomController::class, 'show'])->name('room.show');

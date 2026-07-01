@@ -63,7 +63,7 @@
             <div>
                 <label class="form-label">{{ __('How many rooms of this type?') }}</label>
                 <input type="number" name="quantity" value="{{ old('quantity', 1) }}"
-                       min="1" class="form-input w-28">
+                       min="1" class="form-input w-full sm:w-28">
                 <p class="mt-1 text-xs text-slate-500">{{ __('We will create this many individual room records automatically.') }}</p>
             </div>
 

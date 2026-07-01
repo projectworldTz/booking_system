@@ -6,7 +6,7 @@
 <div class="mb-5 flex items-center justify-between gap-4 flex-wrap">
     <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap gap-2">
         <input type="text" name="search" value="{{ request('search') }}"
-               class="form-input w-56 py-2 text-sm" placeholder="{{ __('Name or email…') }}">
+               class="form-input w-full sm:w-56 py-2 text-sm" placeholder="{{ __('Name or email…') }}">
         <select name="role" class="form-select py-2 text-sm w-auto">
             <option value="">{{ __('All Roles') }}</option>
             <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>{{ __('Super Admin') }}</option>

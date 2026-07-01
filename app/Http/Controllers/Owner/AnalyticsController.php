@@ -6,6 +6,7 @@ use App\Enums\Feature;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Hotel;
+use App\Models\HotelVisit;
 use App\Models\Room;
 use App\Models\RoomType;
 use Carbon\Carbon;
@@ -76,6 +77,13 @@ class AnalyticsController extends Controller
         $revpar     = $availableNights > 0 ? round($revenue / $availableNights, 2) : 0;
         $prevRevpar = $prevAvailableNights > 0 ? round($prevRevenue / $prevAvailableNights, 2) : 0;
 
+        // ── KPI: Page Visits ──────────────────────────────────────────────────
+        $visitsBase = fn ($f, $t) => HotelVisit::where('hotel_id', $hotel->id)
+            ->whereBetween('visited_on', [$f->toDateString(), $t->toDateString()]);
+
+        $visitsCount     = $visitsBase($from, $to)->count();
+        $prevVisitsCount = $visitsBase($prevFrom, $prevTo)->count();
+
         // ── KPI: Cancellation Rate ────────────────────────────────────────────
         $totalAll    = Booking::forHotel($hotel->id)->whereBetween('created_at', [$from, $to])->count();
         $cancelled   = Booking::forHotel($hotel->id)->where('status', Booking::STATUS_CANCELLED)->whereBetween('created_at', [$from, $to])->count();
@@ -110,9 +118,45 @@ class AnalyticsController extends Controller
                 ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
                 ->orderByRaw('DATE_FORMAT(created_at, "%Y-%m")')
                 ->get();
-            $trendLabels  = $revenueTrend->pluck('label')->map(fn ($l) => Carbon::parse($l . '-01')->format('M Y'));
-            $trendData    = $revenueTrend->pluck('total')->map(fn ($v) => (float) $v);
-            $bookingsTrend = $revenueTrend->pluck('bookings')->map(fn ($v) => (int) $v);
+            $rawMonthLabels = $revenueTrend->pluck('label');
+            $trendLabels    = $rawMonthLabels->map(fn ($l) => Carbon::parse($l . '-01')->format('M Y'));
+            $trendData      = $revenueTrend->pluck('total')->map(fn ($v) => (float) $v);
+            $bookingsTrend  = $revenueTrend->pluck('bookings')->map(fn ($v) => (int) $v);
+        }
+
+        // ── Visits trend (daily or monthly based on period) ────────────────────
+        if ($period <= 30) {
+            $visitsByDay = HotelVisit::where('hotel_id', $hotel->id)
+                ->whereBetween('visited_on', [$from->toDateString(), $to->toDateString()])
+                ->selectRaw('visited_on as label, COUNT(*) as total')
+                ->groupBy('visited_on')
+                ->pluck('total', 'label');
+
+            $visitsTrend = collect();
+            for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
+                $visitsTrend->push((int) ($visitsByDay->get($d->format('Y-m-d')) ?? 0));
+            }
+        } else {
+            $visitsByMonth = HotelVisit::where('hotel_id', $hotel->id)
+                ->whereBetween('visited_on', [$from->toDateString(), $to->toDateString()])
+                ->selectRaw('DATE_FORMAT(visited_on, "%Y-%m") as label, COUNT(*) as total')
+                ->groupByRaw('DATE_FORMAT(visited_on, "%Y-%m")')
+                ->pluck('total', 'label');
+
+            $visitsTrend = $rawMonthLabels->map(fn ($l) => (int) ($visitsByMonth->get($l) ?? 0))->values();
+        }
+
+        // Day-over-day (or month-over-month) percent variation, for the trend chart.
+        $visitsVariation = collect();
+        $prevVisitValue  = null;
+        foreach ($visitsTrend as $value) {
+            $visitsVariation->push(match (true) {
+                $prevVisitValue === null => null,
+                $prevVisitValue > 0      => round((($value - $prevVisitValue) / $prevVisitValue) * 100, 1),
+                $value > 0               => 100.0,
+                default                  => 0.0,
+            });
+            $prevVisitValue = $value;
         }
 
         // ── Room type performance ─────────────────────────────────────────────
@@ -169,6 +213,7 @@ class AnalyticsController extends Controller
         $kpis = [
             ['label' => 'Total Revenue',       'value' => number_format($revenue, 2),       'prefix' => '$', 'suffix' => '',  'change' => $pct($revenue, $prevRevenue),       'color' => 'emerald'],
             ['label' => 'Bookings',            'value' => $bookingsCount,                   'prefix' => '',  'suffix' => '',  'change' => $pct($bookingsCount, $prevBookingsCount), 'color' => 'blue'],
+            ['label' => 'Page Visits',         'value' => $visitsCount,                     'prefix' => '',  'suffix' => '',  'change' => $pct($visitsCount, $prevVisitsCount), 'color' => 'indigo'],
             ['label' => 'Occupancy Rate',      'value' => $occupancy,                       'prefix' => '',  'suffix' => '%', 'change' => $pct($occupancy, $prevOccupancy),   'color' => 'purple'],
             ['label' => 'ADR',                 'value' => number_format($adr, 2),           'prefix' => '$', 'suffix' => '',  'change' => $pct($adr, $prevAdr),             'color' => 'amber'],
             ['label' => 'RevPAR',              'value' => number_format($revpar, 2),        'prefix' => '$', 'suffix' => '',  'change' => $pct($revpar, $prevRevpar),        'color' => 'rose'],
@@ -177,7 +222,7 @@ class AnalyticsController extends Controller
 
         return view('owner.analytics.index', compact(
             'hotel', 'period', 'kpis',
-            'trendLabels', 'trendData', 'bookingsTrend',
+            'trendLabels', 'trendData', 'bookingsTrend', 'visitsTrend', 'visitsVariation',
             'roomTypePerf',
             'statusBreakdown',
             'busyDays',

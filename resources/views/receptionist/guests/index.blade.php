@@ -3,10 +3,10 @@
 @section('page-title', __('Guests'))
 
 @section('content')
-<div class="mb-5 flex items-center justify-between gap-3">
-    <form method="GET" action="{{ route('receptionist.guests.index') }}" class="flex gap-2">
+<div class="mb-5 flex flex-wrap items-center gap-3">
+    <form method="GET" action="{{ route('receptionist.guests.index') }}" class="flex flex-wrap gap-2">
         <input type="text" name="search" value="{{ $search }}" placeholder="{{ __('Search name, email or phone') }}"
-               class="form-input w-64">
+               class="form-input w-full sm:w-64">
         <button type="submit" class="btn-outline btn-sm">{{ __('Search') }}</button>
         @if($search)
             <a href="{{ route('receptionist.guests.index') }}" class="btn-ghost btn-sm">{{ __('Clear') }}</a>

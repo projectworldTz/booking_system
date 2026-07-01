@@ -28,7 +28,7 @@
 </div>
 
 {{-- ── KPI Cards ────────────────────────────────────────────────────────────── --}}
-<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-6">
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 mb-6">
     @foreach($kpis as $kpi)
     @php
         $up   = $kpi['change'] !== null && $kpi['change'] >= 0;
@@ -36,6 +36,7 @@
         $colorMap = [
             'emerald' => ['bg' => 'bg-emerald-50 dark:bg-emerald-900/20', 'text' => 'text-emerald-600 dark:text-emerald-400'],
             'blue'    => ['bg' => 'bg-blue-50 dark:bg-blue-900/20',   'text' => 'text-blue-600 dark:text-blue-400'],
+            'indigo'  => ['bg' => 'bg-indigo-50 dark:bg-indigo-900/20','text' => 'text-indigo-600 dark:text-indigo-400'],
             'purple'  => ['bg' => 'bg-purple-50 dark:bg-purple-900/20','text' => 'text-purple-600 dark:text-purple-400'],
             'amber'   => ['bg' => 'bg-amber-50 dark:bg-amber-900/20',  'text' => 'text-amber-600 dark:text-amber-400'],
             'rose'    => ['bg' => 'bg-rose-50 dark:bg-rose-900/20',    'text' => 'text-rose-600 dark:text-rose-400'],
@@ -96,6 +97,45 @@
             </div>
             @endforeach
         </div>
+    </div>
+</div>
+
+{{-- ── Visits trend ─────────────────────────────────────────────────────────── --}}
+<div class="grid gap-6 lg:grid-cols-3 mb-6">
+
+    {{-- Summary card --}}
+    <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5 flex flex-col justify-between">
+        <div>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">{{ __('Page Visits') }}</h3>
+            <p class="text-3xl font-bold leading-none text-indigo-600 dark:text-indigo-400">{{ number_format($visitsTrend->sum()) }}</p>
+            <p class="text-xs text-slate-400 mt-1.5">{{ __('total in period') }}</p>
+        </div>
+        <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Daily average') }}</p>
+                <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $visitsTrend->count() ? round($visitsTrend->avg(), 1) : 0 }}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Peak day') }}</p>
+                <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $visitsTrend->max() ?: 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Visits per day chart (2/3 width) --}}
+    <div class="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('Visits Per Day') }}</h3>
+        <div class="relative h-48">
+            <canvas id="visitsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{{-- ── Visits variation (day-over-day growth) ──────────────────────────────── --}}
+<div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm p-5 mb-6">
+    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('Visits Growth (Day-over-Day)') }}</h3>
+    <div class="relative h-48">
+        <canvas id="visitsVariationChart"></canvas>
     </div>
 </div>
 
@@ -204,6 +244,8 @@ const labelColor = isDark ? '#94a3b8' : '#64748b';
 const trendLabels = @json($trendLabels->values());
 const trendData   = @json($trendData->values());
 const bookingsData = @json($bookingsTrend->values());
+const visitsData   = @json($visitsTrend->values());
+const visitsVariationData = @json($visitsVariation->values());
 
 // ── Revenue chart ─────────────────────────────────────────────────────────────
 new Chart(document.getElementById('revenueChart'), {
@@ -272,6 +314,71 @@ new Chart(document.getElementById('bookingsChart'), {
         scales: {
             x: { grid: { display: false }, ticks: { color: labelColor, maxTicksLimit: 8, maxRotation: 0 } },
             y: { grid: { color: gridColor }, ticks: { color: labelColor, precision: 0 } }
+        }
+    }
+});
+
+// ── Visits per day (gradient area) ─────────────────────────────────────────────
+const visitsCtx = document.getElementById('visitsChart').getContext('2d');
+const visitsGradient = visitsCtx.createLinearGradient(0, 0, 0, 200);
+visitsGradient.addColorStop(0, 'rgba(99,102,241,0.35)');
+visitsGradient.addColorStop(1, 'rgba(99,102,241,0)');
+
+new Chart(visitsCtx, {
+    type: 'line',
+    data: {
+        labels: trendLabels,
+        datasets: [{
+            label: 'Visits',
+            data: visitsData,
+            borderColor: '#6366f1',
+            backgroundColor: visitsGradient,
+            borderWidth: 2.5,
+            pointRadius: trendLabels.length > 30 ? 0 : 3,
+            pointBackgroundColor: '#6366f1',
+            pointHoverRadius: 5,
+            fill: true,
+            tension: 0.4,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor, maxTicksLimit: 8, maxRotation: 0 } },
+            y: { grid: { color: gridColor }, ticks: { color: labelColor, precision: 0 } }
+        }
+    }
+});
+
+// ── Visits growth (day-over-day %) ──────────────────────────────────────────────
+const variationColors = visitsVariationData.map(v => v === null ? gridColor : (v >= 0 ? '#10b981' : '#ef4444'));
+
+new Chart(document.getElementById('visitsVariationChart'), {
+    type: 'bar',
+    data: {
+        labels: trendLabels,
+        datasets: [{
+            label: 'Growth %',
+            data: visitsVariationData,
+            backgroundColor: variationColors,
+            borderRadius: 4,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.raw === null ? 'No prior data' : ctx.raw + '%'
+                }
+            }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor, maxTicksLimit: 8, maxRotation: 0 } },
+            y: { grid: { color: gridColor }, ticks: { color: labelColor, callback: v => v + '%' } }
         }
     }
 });
