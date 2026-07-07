@@ -18,7 +18,7 @@
     @endif
 
     <form method="POST" action="{{ route('booking.store') }}"
-          x-data="checkoutForm()"
+          x-data="checkoutForm({{ $manualPayment ? 'true' : 'false' }})"
           @submit.prevent="submit($event)">
         {{-- Alpine.js component handles submit loading state --}}
         @csrf

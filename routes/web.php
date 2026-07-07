@@ -258,6 +258,9 @@ Route::middleware('auth')->group(function () {
             // Payment methods
             Route::post('/{hotel}/payment-methods', [OwnerHotelController::class, 'updatePaymentMethods'])->name('payment-methods.update');
 
+            // Manual payment fallback
+            Route::post('/{hotel}/manual-payment', [OwnerHotelController::class, 'updateManualPayment'])->name('manual-payment.update');
+
             // Online booking toggle
             Route::post('/{hotel}/toggle-online-booking', [OwnerHotelController::class, 'toggleOnlineBooking'])->name('toggle-online-booking');
 

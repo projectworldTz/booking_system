@@ -33,13 +33,25 @@ class BookingController extends Controller
                 ->with('warning', 'Your cart is empty. Please select a room first.');
         }
 
-        // Resolve which payment methods the hotel owner has enabled
-        $hotel           = $cart->items->first()?->roomType?->hotel;
-        $enabledKeys     = $hotel ? $hotel->enabledPaymentMethods() : \App\Models\Hotel::ALL_PAYMENT_METHODS;
-        $allGateways     = $this->paymentService->availableGateways();
-        $gateways        = array_filter($allGateways, fn($g) => in_array($g['key'], $enabledKeys));
+        $hotel = $cart->items->first()?->roomType?->hotel;
 
-        return view('booking.checkout', compact('cart', 'gateways', 'hotel'));
+        // Owner has switched off online payment — show manual numbers instead of a gateway picker
+        if ($hotel?->manual_payment_enabled) {
+            $manualPayment = true;
+            $manualNumbers = $hotel->manualPaymentNumbers();
+            $gateways      = [];
+
+            return view('booking.checkout', compact('cart', 'gateways', 'hotel', 'manualPayment', 'manualNumbers'));
+        }
+
+        // Resolve which payment methods the hotel owner has enabled
+        $enabledKeys   = $hotel ? $hotel->enabledPaymentMethods() : \App\Models\Hotel::ALL_PAYMENT_METHODS;
+        $allGateways   = $this->paymentService->availableGateways();
+        $gateways      = array_filter($allGateways, fn($g) => in_array($g['key'], $enabledKeys));
+        $manualPayment = false;
+        $manualNumbers = [];
+
+        return view('booking.checkout', compact('cart', 'gateways', 'hotel', 'manualPayment', 'manualNumbers'));
     }
 
     /**
@@ -54,6 +66,21 @@ class BookingController extends Controller
             $booking = $this->bookingService->createFromCart($user, $request->validated());
         } catch (\RuntimeException $e) {
             return back()->withErrors(['booking' => $e->getMessage()]);
+        }
+
+        if ($booking->hotel?->manual_payment_enabled) {
+            \App\Models\Payment::create([
+                'booking_id' => $booking->id,
+                'method'     => 'manual',
+                'status'     => 'pending',
+                'amount'     => $booking->grand_total,
+                'currency'   => $booking->currency ?? config('app.currency'),
+                'metadata'   => ['note' => 'Awaiting manual payment confirmation by the hotel.'],
+            ]);
+
+            return redirect()
+                ->route('booking.show', $booking->booking_number)
+                ->with(['manual_payment' => true]);
         }
 
         $paymentMethod   = $request->validated()['payment_method'];

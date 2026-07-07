@@ -38,6 +38,8 @@ class Hotel extends Model
         'cancellation_policy',
         'payment_methods',
         'online_booking_enabled',
+        'manual_payment_enabled',
+        'manual_payment_numbers',
     ];
 
     protected $casts = [
@@ -49,6 +51,8 @@ class Hotel extends Model
         'longitude'        => 'float',
         'payment_methods'         => 'array',
         'online_booking_enabled'  => 'boolean',
+        'manual_payment_enabled'  => 'boolean',
+        'manual_payment_numbers'  => 'array',
     ];
 
     /** All payment method keys supported by the platform. */
@@ -61,6 +65,12 @@ class Hotel extends Model
     public function enabledPaymentMethods(): array
     {
         return $this->payment_methods ?: self::ALL_PAYMENT_METHODS;
+    }
+
+    /** Configured manual mobile-money numbers, keyed by method, empty ones dropped. */
+    public function manualPaymentNumbers(): array
+    {
+        return array_filter($this->manual_payment_numbers ?? []);
     }
 
     // ── Relationships ─────────────────────────────────────────────────────────

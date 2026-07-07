@@ -316,6 +316,25 @@ class HotelController extends Controller
         return back()->with('success', 'Payment methods updated successfully.');
     }
 
+    // ── Manual payment fallback ───────────────────────────────────────────────
+
+    public function updateManualPayment(Request $request, Hotel $hotel): RedirectResponse
+    {
+        $this->authorizeHotel($hotel);
+
+        $data = $request->validate([
+            'manual_payment_numbers'   => ['nullable', 'array'],
+            'manual_payment_numbers.*' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $hotel->update([
+            'manual_payment_enabled' => $request->boolean('manual_payment_enabled'),
+            'manual_payment_numbers' => array_filter($data['manual_payment_numbers'] ?? []),
+        ]);
+
+        return back()->with('success', 'Manual payment settings updated successfully.');
+    }
+
     // ── Guard ─────────────────────────────────────────────────────────────────
 
     private function authorizeHotel(Hotel $hotel): void

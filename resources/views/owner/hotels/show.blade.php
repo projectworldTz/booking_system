@@ -125,6 +125,56 @@
             </form>
         </div>
 
+        {{-- Manual Payment Fallback --}}
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">{{ __('Manual Payment Fallback') }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {{ __('If online payment is unavailable, guests are shown these numbers and asked to contact you to confirm their booking.') }}
+                    </p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('owner.hotels.manual-payment.update', $hotel) }}">
+                @csrf
+                <label class="flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3.5 mb-4 transition-all
+                              {{ $hotel->manual_payment_enabled
+                                 ? 'border-navy bg-navy/5 dark:border-navy-light dark:bg-navy/10'
+                                 : 'border-slate-200 dark:border-slate-700' }}">
+                    <input type="checkbox" name="manual_payment_enabled" value="1"
+                           {{ $hotel->manual_payment_enabled ? 'checked' : '' }}
+                           class="rounded border-slate-300 text-navy focus:ring-navy">
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">
+                        {{ __('Use manual payment instead of online gateways') }}
+                    </span>
+                </label>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach($allMethods as $key => $method)
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">{{ $method['label'] }} {{ __('number') }}</label>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="h-8 w-8 rounded-full {{ $method['color'] }} flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+                                {{ $method['abbr'] }}
+                            </span>
+                            <input type="text" name="manual_payment_numbers[{{ $key }}]"
+                                   value="{{ $hotel->manual_payment_numbers[$key] ?? '' }}"
+                                   placeholder="{{ __('e.g. 0784 123 456') }}"
+                                   class="form-input flex-1">
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" class="btn-outline btn-sm">
+                        {{ __('Save Manual Payment Settings') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
         {{-- Hotel Photos --}}
         <div class="card p-6" x-data="{ selected: [] }">
             <div class="flex items-center justify-between mb-5">

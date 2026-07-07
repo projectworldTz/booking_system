@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ReservationCart;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBookingRequest extends FormRequest
@@ -10,6 +11,10 @@ class StoreBookingRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        if (! $this->filled('phone_number')) {
+            return;
+        }
+
         // Normalize: strip country code, spaces, dashes, then strip leading 0
         $phone = preg_replace('/[\s\-\(\)\+]/', '', $this->input('phone_number', ''));
         if (str_starts_with($phone, '255')) {
@@ -21,14 +26,30 @@ class StoreBookingRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $base = [
             'guests_adults'    => ['required', 'integer', 'min:1', 'max:20'],
             'guests_children'  => ['integer', 'min:0', 'max:10'],
             'special_requests' => ['nullable', 'string', 'max:1000'],
-            'payment_method'   => ['required', 'in:airtel_money,mpesa,halotel,mix_by_yas'],
-            'phone_number'     => ['required', 'digits:9', 'regex:/^[67]\d{8}$/', $this->phoneNetworkRule()],
             'agree_terms'      => ['required', 'accepted'],
         ];
+
+        if ($this->resolvedHotel()?->manual_payment_enabled) {
+            return $base;
+        }
+
+        return $base + [
+            'payment_method' => ['required', 'in:airtel_money,mpesa,halotel,mix_by_yas'],
+            'phone_number'   => ['required', 'digits:9', 'regex:/^[67]\d{8}$/', $this->phoneNetworkRule()],
+        ];
+    }
+
+    /** Resolve the hotel behind the user's cart, same path used by BookingController::checkout(). */
+    private function resolvedHotel(): ?\App\Models\Hotel
+    {
+        return ReservationCart::where('user_id', $this->user()->id)
+            ->with('items.roomType.hotel')
+            ->first()
+            ?->items->first()?->roomType?->hotel;
     }
 
     private function phoneNetworkRule(): \Closure
