@@ -323,13 +323,19 @@ class HotelController extends Controller
         $this->authorizeHotel($hotel);
 
         $data = $request->validate([
-            'manual_payment_numbers'   => ['nullable', 'array'],
-            'manual_payment_numbers.*' => ['nullable', 'string', 'max:20'],
+            'manual_payment_numbers'          => ['nullable', 'array'],
+            'manual_payment_numbers.*.number' => ['nullable', 'string', 'max:20'],
+            'manual_payment_numbers.*.name'   => ['nullable', 'string', 'max:100'],
         ]);
+
+        $numbers = collect($data['manual_payment_numbers'] ?? [])
+            ->filter(fn ($entry) => filled($entry['number'] ?? null))
+            ->map(fn ($entry) => ['number' => $entry['number'], 'name' => $entry['name'] ?? ''])
+            ->all();
 
         $hotel->update([
             'manual_payment_enabled' => $request->boolean('manual_payment_enabled'),
-            'manual_payment_numbers' => array_filter($data['manual_payment_numbers'] ?? []),
+            'manual_payment_numbers' => $numbers,
         ]);
 
         return back()->with('success', 'Manual payment settings updated successfully.');

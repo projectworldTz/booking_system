@@ -150,19 +150,26 @@
                     </span>
                 </label>
 
-                <div class="grid gap-3 sm:grid-cols-2">
+                <div class="grid gap-4 sm:grid-cols-2">
                     @foreach($allMethods as $key => $method)
-                    <div>
-                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">{{ $method['label'] }} {{ __('number') }}</label>
-                        <div class="mt-1 flex items-center gap-2">
+                    @php $entry = $hotel->manual_payment_numbers[$key] ?? []; @endphp
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+                        <div class="flex items-center gap-2 mb-2">
                             <span class="h-8 w-8 rounded-full {{ $method['color'] }} flex items-center justify-center text-white font-bold text-[10px] shrink-0">
                                 {{ $method['abbr'] }}
                             </span>
-                            <input type="text" name="manual_payment_numbers[{{ $key }}]"
-                                   value="{{ $hotel->manual_payment_numbers[$key] ?? '' }}"
-                                   placeholder="{{ __('e.g. 0784 123 456') }}"
-                                   class="form-input flex-1">
+                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $method['label'] }}</span>
                         </div>
+                        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ __('Number') }}</label>
+                        <input type="text" name="manual_payment_numbers[{{ $key }}][number]"
+                               value="{{ $entry['number'] ?? '' }}"
+                               placeholder="{{ __('e.g. 0784 123 456') }}"
+                               class="form-input w-full mt-1 mb-2">
+                        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ __('Registered Name') }}</label>
+                        <input type="text" name="manual_payment_numbers[{{ $key }}][name]"
+                               value="{{ $entry['name'] ?? '' }}"
+                               placeholder="{{ __('e.g. KELVIN LEONARD MIKIDA') }}"
+                               class="form-input w-full mt-1">
                     </div>
                     @endforeach
                 </div>

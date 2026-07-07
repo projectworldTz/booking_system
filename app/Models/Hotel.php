@@ -67,10 +67,13 @@ class Hotel extends Model
         return $this->payment_methods ?: self::ALL_PAYMENT_METHODS;
     }
 
-    /** Configured manual mobile-money numbers, keyed by method, empty ones dropped. */
+    /** Configured manual mobile-money numbers (['number' => ..., 'name' => ...]), keyed by method, empty ones dropped. */
     public function manualPaymentNumbers(): array
     {
-        return array_filter($this->manual_payment_numbers ?? []);
+        return array_filter(
+            $this->manual_payment_numbers ?? [],
+            fn ($entry) => filled($entry['number'] ?? null)
+        );
     }
 
     // ── Relationships ─────────────────────────────────────────────────────────

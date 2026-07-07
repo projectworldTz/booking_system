@@ -56,6 +56,46 @@
     });
     </script>
     @endpush
+    @elseif(session('manual_payment') && $booking->payment && $booking->payment->status === 'pending')
+    <div class="mb-6 rounded-2xl bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 p-6">
+        <div class="flex items-start gap-4">
+            <div class="shrink-0 mt-0.5">
+                <svg class="h-8 w-8 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h2 class="text-lg font-bold text-sky-900 dark:text-sky-100">{{ __('Online Payment Unavailable') }}</h2>
+                <p class="mt-1 text-sm text-sky-800 dark:text-sky-200">
+                    {{ __('Online payment is currently not working for this hotel. Please make your payment using one of the numbers below, then contact the hotel to confirm your booking.') }}
+                </p>
+
+                @php $numbers = $booking->hotel?->manualPaymentNumbers() ?? []; @endphp
+                @if(!empty($numbers))
+                @php $labels = ['airtel_money' => 'Airtel Money', 'mpesa' => 'M-Pesa', 'halotel' => 'Halotel', 'mix_by_yas' => 'Mix by Yas']; @endphp
+                <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                    @foreach($numbers as $key => $entry)
+                    <div class="rounded-lg bg-white/60 dark:bg-slate-800/60 px-3 py-2">
+                        <p class="text-xs text-sky-700 dark:text-sky-300">{{ $labels[$key] ?? ucfirst(str_replace('_', ' ', $key)) }}</p>
+                        <p class="font-mono font-semibold text-sky-900 dark:text-sky-100">{{ $entry['number'] }}</p>
+                        @if(!empty($entry['name']))
+                        <p class="text-xs text-sky-700 dark:text-sky-300">{{ __('Name') }}: {{ $entry['name'] }}</p>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+
+                @if($booking->hotel?->phone || $booking->hotel?->email)
+                <p class="mt-4 text-sm text-sky-800 dark:text-sky-200">
+                    {{ __('Contact the hotel to confirm your booking:') }}
+                    @if($booking->hotel->phone) <strong>{{ $booking->hotel->phone }}</strong> @endif
+                    @if($booking->hotel->email) &middot; <strong>{{ $booking->hotel->email }}</strong> @endif
+                </p>
+                @endif
+            </div>
+        </div>
+    </div>
     @endif
 
     {{-- Booking confirmed success banner --}}

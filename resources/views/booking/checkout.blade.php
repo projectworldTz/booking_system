@@ -54,17 +54,51 @@
                 {{-- Payment Method --}}
                 <div class="card p-6">
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-1">{{ __('Payment Method') }}</h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ __('Select your mobile money provider') }}</p>
-                    @error('payment_method') <p class="form-error mb-3">{{ $message }}</p> @enderror
 
                     @php
                         $methodMeta = [
-                            'airtel_money' => ['color' => 'bg-red-500',     'text' => 'text-red-600 dark:text-red-400',           'abbr' => 'AM'],
-                            'mpesa'        => ['color' => 'bg-emerald-600', 'text' => 'text-emerald-600 dark:text-emerald-400',    'abbr' => 'MP'],
-                            'halotel'      => ['color' => 'bg-orange-500',  'text' => 'text-orange-600 dark:text-orange-400',      'abbr' => 'HL'],
-                            'mix_by_yas'   => ['color' => 'bg-blue-600',    'text' => 'text-blue-600 dark:text-blue-400',          'abbr' => 'MX'],
+                            'airtel_money' => ['label' => 'Airtel Money', 'color' => 'bg-red-500',     'text' => 'text-red-600 dark:text-red-400',           'abbr' => 'AM'],
+                            'mpesa'        => ['label' => 'M-Pesa',       'color' => 'bg-emerald-600', 'text' => 'text-emerald-600 dark:text-emerald-400',    'abbr' => 'MP'],
+                            'halotel'      => ['label' => 'Halotel',      'color' => 'bg-orange-500',  'text' => 'text-orange-600 dark:text-orange-400',      'abbr' => 'HL'],
+                            'mix_by_yas'   => ['label' => 'Mix by Yas',   'color' => 'bg-blue-600',    'text' => 'text-blue-600 dark:text-blue-400',          'abbr' => 'MX'],
                         ];
                     @endphp
+
+                    @if($manualPayment)
+                    <div class="rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-700 p-4 text-sm text-sky-800 dark:text-sky-200">
+                        {{ __('Online payment is currently unavailable for this hotel. Please make your payment using one of the numbers below, then contact the hotel to confirm your booking.') }}
+                    </div>
+
+                    @if(!empty($manualNumbers))
+                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                        @foreach($manualNumbers as $key => $entry)
+                        @php $meta = $methodMeta[$key] ?? ['label' => ucfirst(str_replace('_', ' ', $key)), 'color' => 'bg-slate-500', 'abbr' => '?']; @endphp
+                        <div class="flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-3.5">
+                            <span class="h-10 w-10 rounded-full {{ $meta['color'] }} flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                {{ $meta['abbr'] }}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $meta['label'] }}</p>
+                                <p class="text-sm font-mono text-slate-600 dark:text-slate-300">{{ $entry['number'] }}</p>
+                                @if(!empty($entry['name']))
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Name') }}: {{ $entry['name'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @if($hotel?->phone || $hotel?->email)
+                    <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                        {{ __('Contact the hotel to confirm your booking:') }}
+                        @if($hotel->phone) <strong class="text-slate-700 dark:text-slate-300">{{ $hotel->phone }}</strong> @endif
+                        @if($hotel->email) &middot; <strong class="text-slate-700 dark:text-slate-300">{{ $hotel->email }}</strong> @endif
+                    </p>
+                    @endif
+                    @else
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ __('Select your mobile money provider') }}</p>
+                    @error('payment_method') <p class="form-error mb-3">{{ $message }}</p> @enderror
 
                     @if(empty($gateways))
                     <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 p-4 text-sm text-amber-800 dark:text-amber-200">
@@ -172,6 +206,7 @@
                             </p>
                         </div>
                     </div>
+                    @endif
                 </div>
 
                 {{-- Terms --}}
@@ -236,18 +271,24 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                             </svg>
-                            {{ __('Sending payment request…') }}
+                            {{ __('Submitting…') }}
                         </span>
+                        @if($manualPayment)
+                        <span x-show="!submitting">{{ __('Confirm Booking') }}</span>
+                        @else
                         <span x-show="!submitting && payment !== '' && phone !== ''">
                             {{ __('Pay with') }} <span x-text="providerLabel"></span>
                         </span>
                         <span x-show="!submitting && (payment === '' || !isPhoneValid)">
                             {{ __('Select payment method & enter number') }}
                         </span>
+                        @endif
                     </button>
 
                     <p class="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
-                        {{ __('You will receive a PIN prompt on your phone after clicking Pay.') }}
+                        {{ $manualPayment
+                            ? __('Your booking will be held pending manual payment confirmation by the hotel.')
+                            : __('You will receive a PIN prompt on your phone after clicking Pay.') }}
                     </p>
                 </div>
             </div>
@@ -256,8 +297,9 @@
 </div>
 @push('scripts')
 <script>
-function checkoutForm() {
+function checkoutForm(manual) {
     return {
+        manual:       manual,
         payment:      '{{ old('payment_method', '') }}',
         phone:        '{{ old('phone_number',   '') }}',
         phoneTouched: false,
@@ -318,6 +360,7 @@ function checkoutForm() {
         },
 
         get canSubmit() {
+            if (this.manual) return !this.submitting;
             return this.payment !== '' && this.isPhoneValid && !this.submitting;
         },
 
