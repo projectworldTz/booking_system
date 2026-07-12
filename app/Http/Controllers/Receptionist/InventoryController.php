@@ -121,4 +121,36 @@ class InventoryController extends Controller
 
         return back()->with('success', 'Asset updated.');
     }
+
+    public function storeCategory(Request $request)
+    {
+        $hotel = $request->attributes->get('assigned_hotel');
+        abort_unless($hotel->hasFeature(Feature::INVENTORY_MANAGEMENT), 403);
+
+        $data = $request->validate([
+            'name'  => ['required', 'string', 'max:100', 'unique:asset_categories,name'],
+            'color' => ['nullable', 'string', 'in:slate,gray,amber,blue,purple,orange,emerald,cyan,rose'],
+        ]);
+
+        AssetCategory::create([
+            'name'  => $data['name'],
+            'color' => $data['color'] ?? 'slate',
+        ]);
+
+        return back()->with('success', "Category \"{$data['name']}\" added.");
+    }
+
+    public function destroyCategory(Request $request, AssetCategory $category)
+    {
+        $hotel = $request->attributes->get('assigned_hotel');
+        abort_unless($hotel->hasFeature(Feature::INVENTORY_MANAGEMENT), 403);
+
+        if ($category->assets()->exists()) {
+            return back()->withErrors(['category' => "Category \"{$category->name}\" is still in use by assets and can't be deleted."]);
+        }
+
+        $category->delete();
+
+        return back()->with('success', "Category \"{$category->name}\" deleted.");
+    }
 }

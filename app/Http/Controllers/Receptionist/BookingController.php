@@ -10,9 +10,10 @@ use App\Models\Payment;
 use App\Models\Role;
 use App\Models\Room;
 use App\Models\RoomType;
-use App\Models\Setting;
 use App\Models\User;
 use App\Services\BookingService;
+use App\Services\InvoiceService;
+use App\Services\PricingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,8 @@ class BookingController extends Controller
 {
     public function __construct(
         private BookingService $bookingService,
+        private PricingService $pricingService,
+        private InvoiceService $invoiceService,
     ) {}
 
     public function index(Request $request)
@@ -56,7 +59,7 @@ class BookingController extends Controller
         $hotel = $request->attributes->get('assigned_hotel');
         abort_if($booking->hotel_id !== $hotel->id, 403);
 
-        $booking->loadMissing(['user', 'rooms.roomType', 'hotel', 'payment']);
+        $booking->loadMissing(['user', 'rooms.roomType', 'hotel', 'payment', 'invoice']);
 
         return view('receptionist.bookings.show', compact('hotel', 'booking'));
     }
@@ -134,10 +137,11 @@ class BookingController extends Controller
             }
         }
 
-        $taxRate  = (float) Setting::get('booking_tax_rate', 10);
         $subTotal = round($roomType->base_price * $nights, 2);
-        $taxTotal = round($subTotal * $taxRate / 100, 2);
-        $grandTotal = $subTotal + $taxTotal;
+        $pricing  = $this->pricingService->calculateOrderTotal($subTotal);
+        $taxRate    = $pricing['tax_rate'];
+        $taxTotal   = $pricing['tax_total'];
+        $grandTotal = $pricing['grand_total'];
 
         $booking = DB::transaction(function () use ($hotel, $guest, $room, $roomType, $data, $nights, $subTotal, $taxRate, $taxTotal, $grandTotal) {
             $booking = Booking::create([
@@ -178,6 +182,9 @@ class BookingController extends Controller
                 'amount'     => $grandTotal,
                 'currency'   => config('app.currency'),
             ]);
+
+            $invoice = $this->invoiceService->generateForBooking($booking);
+            $this->invoiceService->markPaid($invoice);
 
             return $booking;
         });

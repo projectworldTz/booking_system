@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 class TranquilooSeeder extends Seeder
 {
     private const HOTEL_ID   = 2;
-    private const TAX_RATE   = 18;
+    private const TAX_RATE   = 0;
     private const CURRENCY   = 'TZS';
 
     // Rooms: KING1 = TZS 45,000  |  VIP = TZS 35,000

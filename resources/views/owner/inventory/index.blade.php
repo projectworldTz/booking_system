@@ -12,13 +12,22 @@
         </a>
         <h2 class="text-xl font-bold text-slate-900 dark:text-white mt-0.5">Asset Register</h2>
     </div>
-    <button x-data @click="$dispatch('open-add-asset')"
-            class="btn-primary flex items-center gap-2">
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        Add Asset
-    </button>
+    <div class="flex items-center gap-2">
+        <button x-data @click="$dispatch('open-manage-categories')"
+                class="btn-outline flex items-center gap-2">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5.586a1 1 0 01.707.293l6.414 6.414a1 1 0 010 1.414l-8.586 8.586a1 1 0 01-1.414 0l-6.414-6.414A1 1 0 013 12.586V7a4 4 0 014-4z"/>
+            </svg>
+            Manage Categories
+        </button>
+        <button x-data @click="$dispatch('open-add-asset')"
+                class="btn-primary flex items-center gap-2">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add Asset
+        </button>
+    </div>
 </div>
 
 {{-- ── Summary Cards ────────────────────────────────────────────────────────── --}}
@@ -238,6 +247,55 @@
             </button>
         </div>
         @include('owner.inventory._form', ['asset' => null, 'categories' => $categories, 'hotel' => $hotel, 'action' => route('owner.inventory.store', $hotel), 'method' => 'POST'])
+    </div>
+</div>
+
+{{-- ── Manage Categories Modal ──────────────────────────────────────────────── --}}
+<div x-data="{ open: false }"
+     x-on:open-manage-categories.window="open = true"
+     x-show="open"
+     x-trap="open"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     style="display:none">
+    <div class="absolute inset-0 bg-black/50" @click="open = false"></div>
+    <div class="relative w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl p-6 z-10 max-h-[90vh] overflow-y-auto" @click.stop>
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Manage Categories</h3>
+            <button @click="open = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ route('owner.inventory.categories.store', $hotel) }}" class="flex gap-2 mb-5">
+            @csrf
+            <input type="text" name="name" required maxlength="100" placeholder="e.g. Furniture"
+                   class="form-input flex-1 text-sm">
+            <select name="color" class="form-input w-auto text-sm">
+                @foreach(['slate'=>'Slate','gray'=>'Gray','amber'=>'Amber','blue'=>'Blue','purple'=>'Purple','orange'=>'Orange','emerald'=>'Emerald','cyan'=>'Cyan','rose'=>'Rose'] as $v => $l)
+                <option value="{{ $v }}">{{ $l }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn-primary btn-sm shrink-0">Add</button>
+        </form>
+
+        <div class="space-y-1.5">
+            @forelse($categories as $cat)
+            <div class="flex items-center justify-between rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-700/50">
+                <span class="text-sm text-slate-700 dark:text-slate-200">{{ $cat->name }}</span>
+                <form method="POST" action="{{ route('owner.inventory.categories.destroy', [$hotel, $cat]) }}"
+                      onsubmit="return confirm('Delete category {{ addslashes($cat->name) }}?')">
+                    @csrf @method('DELETE')
+                    <button class="text-slate-400 hover:text-rose-600 transition">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            @empty
+            <p class="text-xs text-slate-400 text-center py-3">No categories yet — add one above.</p>
+            @endforelse
+        </div>
     </div>
 </div>
 

@@ -25,7 +25,7 @@ use Illuminate\Support\Str;
 class TranquilooBookingSeeder extends Seeder
 {
     private const HOTEL_SLUG = 'tranquiloo';
-    private const TAX_RATE   = 18; // %
+    private const TAX_RATE   = 0; // %
     private const CURRENCY   = 'TZS';
 
     public function run(): void

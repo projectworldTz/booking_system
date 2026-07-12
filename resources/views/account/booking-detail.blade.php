@@ -101,10 +101,26 @@
                 @if($booking->discount_total > 0)
                 <div class="flex justify-between text-emerald-600"><span>{{ __('Discount') }}</span><span>−{{ money($booking->discount_total) }}</span></div>
                 @endif
+                @if($booking->tax_total > 0)
                 <div class="flex justify-between"><span class="text-slate-500">{{ __('Tax') }} ({{ $booking->tax_rate }}%)</span><span>{{ money($booking->tax_total) }}</span></div>
+                @endif
                 <div class="flex justify-between font-bold text-base border-t border-slate-200 dark:border-slate-700 pt-2 mt-1">
                     <span>{{ __('Total') }}</span><span>{{ money($booking->grand_total) }}</span>
                 </div>
+
+                @if($booking->invoice && $booking->invoice->isCancelled() && $booking->invoice->cancellation_deduction)
+                <div class="pt-2 border-t border-dashed border-rose-200 dark:border-rose-800 space-y-1.5">
+                    <p class="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wide mb-1">{{ __('Cancellation Adjustment') }}</p>
+                    <div class="flex justify-between text-rose-600 dark:text-rose-400">
+                        <span>{{ __('Deduction') }} ({{ number_format((float) $booking->invoice->deduction_percentage, 0) }}%)</span>
+                        <span>−{{ money($booking->invoice->cancellation_deduction) }}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-emerald-600 dark:text-emerald-400">
+                        <span>{{ __('Refund Due') }} ({{ number_format(100 - (float) $booking->invoice->deduction_percentage, 0) }}%)</span>
+                        <span>{{ money($booking->invoice->refund_amount) }}</span>
+                    </div>
+                </div>
+                @endif
                 @if($booking->payment)
                 <div class="flex justify-between text-slate-500 pt-1">
                     <span>{{ __('Payment') }}</span>

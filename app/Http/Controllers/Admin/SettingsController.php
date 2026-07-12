@@ -23,7 +23,6 @@ class SettingsController extends Controller
             'settings.site_phone'         => ['nullable', 'string', 'max:30'],
             'settings.min_advance_days'   => ['required', 'integer', 'min:0'],
             'settings.max_advance_days'   => ['required', 'integer', 'min:1', 'gte:settings.min_advance_days'],
-            'settings.booking_tax_rate'   => ['required', 'numeric', 'min:0', 'max:100'],
             'settings.default_commission_rate' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 

@@ -163,10 +163,12 @@
                 <span>−{{ money($booking->discount_total) }}</span>
             </div>
             @endif
+            @if(($booking->tax_total ?? 0) > 0)
             <div class="flex justify-between text-slate-600 dark:text-slate-300">
                 <span>{{ __('Tax') }} ({{ $booking->tax_rate }}%)</span>
                 <span>{{ money($booking->tax_total ?? 0) }}</span>
             </div>
+            @endif
             <div class="flex justify-between font-bold text-base text-slate-900 dark:text-white pt-1">
                 <span>{{ __('Total') }}</span>
                 <span>{{ money($booking->grand_total ?? 0) }}</span>

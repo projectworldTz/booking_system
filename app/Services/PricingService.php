@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\RoomType;
-use App\Models\Setting;
 use Carbon\Carbon;
 
 class PricingService
@@ -64,7 +63,7 @@ class PricingService
     }
 
     /**
-     * Build a full order total from a cart subtotal, applying tax.
+     * Build a full order total from a cart subtotal. Taxation is disabled.
      *
      * Returns:
      *   subtotal        float
@@ -75,17 +74,12 @@ class PricingService
      */
     public function calculateOrderTotal(float $subtotal): array
     {
-        $taxRate  = (float) Setting::get('booking_tax_rate', 10);
-        $taxTotal = round($subtotal * $taxRate / 100, 2);
-
-        $grandTotal = max(0, round($subtotal + $taxTotal, 2));
-
         return [
             'subtotal'       => $subtotal,
-            'tax_rate'       => $taxRate,
-            'tax_total'      => $taxTotal,
+            'tax_rate'       => 0.0,
+            'tax_total'      => 0.0,
             'discount_total' => 0.0,
-            'grand_total'    => $grandTotal,
+            'grand_total'    => max(0, round($subtotal, 2)),
         ];
     }
 

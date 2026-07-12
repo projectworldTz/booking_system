@@ -93,7 +93,7 @@ class DatabaseSeeder extends Seeder
             'site_name'              => 'StayBook Tanzania',
             'site_email'             => 'info@staybook.co.tz',
             'currency'               => 'TZS',
-            'tax_rate'               => '18',
+            'tax_rate'               => '0',
             'platform_commission'    => '10',
             'booking_expiry_minutes' => '60',
             'cancellation_policy'    => 'Free cancellation up to 24 hours before check-in. After that, the first night is non-refundable.',

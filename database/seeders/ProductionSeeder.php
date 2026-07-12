@@ -149,7 +149,7 @@ class ProductionSeeder extends Seeder
             'site_name'              => env('APP_NAME', 'Hotel Booking Platform'),
             'site_email'             => env('MAIL_FROM_ADDRESS', 'info@yourdomain.com'),
             'currency'               => env('DEFAULT_CURRENCY', 'TZS'),
-            'tax_rate'               => env('DEFAULT_TAX_RATE', '18'),
+            'tax_rate'               => env('DEFAULT_TAX_RATE', '0'),
             'platform_commission'    => env('PLATFORM_COMMISSION', '10'),
             'booking_expiry_minutes' => '60',
             'cancellation_policy'    => 'Free cancellation up to 48 hours before check-in. Partial refund within 24-48 hours. No refund under 24 hours.',

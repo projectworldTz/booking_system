@@ -316,6 +316,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/',          [OwnerInventoryController::class, 'store'])->name('store');
             Route::put('/{asset}',    [OwnerInventoryController::class, 'update'])->name('update');
             Route::delete('/{asset}', [OwnerInventoryController::class, 'destroy'])->name('destroy');
+
+            Route::post('/categories',            [OwnerInventoryController::class, 'storeCategory'])->name('categories.store');
+            Route::delete('/categories/{category}', [OwnerInventoryController::class, 'destroyCategory'])->name('categories.destroy');
         });
 
         // Premium Feature Requests
@@ -379,6 +382,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/',          [ReceptionistInventoryController::class, 'index'])->name('index');
             Route::post('/',         [ReceptionistInventoryController::class, 'store'])->name('store');
             Route::put('/{asset}',   [ReceptionistInventoryController::class, 'update'])->name('update');
+
+            Route::post('/categories',              [ReceptionistInventoryController::class, 'storeCategory'])->name('categories.store');
+            Route::delete('/categories/{category}', [ReceptionistInventoryController::class, 'destroyCategory'])->name('categories.destroy');
         });
 
         // Emergency Cancellation Approvals

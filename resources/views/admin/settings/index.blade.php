@@ -57,13 +57,6 @@
                     <p class="mt-1 text-xs text-slate-400">How far in the future a check-in date may be selected.</p>
                 </div>
                 <div>
-                    <label class="form-label">Booking Tax Rate (%)</label>
-                    <input type="number" name="settings[booking_tax_rate]"
-                           value="{{ $settings['booking_tax_rate'] ?? 10 }}"
-                           min="0" max="100" step="0.1" class="form-input">
-                    <p class="mt-1 text-xs text-slate-400">Applied to every booking's subtotal, whether made by a guest online or a receptionist at the desk.</p>
-                </div>
-                <div>
                     <label class="form-label">Default Commission Rate (%)</label>
                     <input type="number" name="settings[default_commission_rate]"
                            value="{{ $settings['default_commission_rate'] ?? 10 }}"
