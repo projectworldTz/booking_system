@@ -246,6 +246,34 @@ class HotelController extends Controller
         return back()->with('success', "Room {$room->room_number} deleted.");
     }
 
+    // ── Amenity management ──────────────────────────────────────────────────────
+
+    public function storeAmenity(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name'     => ['required', 'string', 'max:100', 'unique:amenities,name'],
+            'category' => ['nullable', 'string', 'in:general,connectivity,recreation,dining,transport,services'],
+        ]);
+
+        Amenity::create([
+            'name'     => $data['name'],
+            'category' => $data['category'] ?? 'general',
+        ]);
+
+        return back()->with('success', "Amenity \"{$data['name']}\" added.");
+    }
+
+    public function destroyAmenity(Amenity $amenity): RedirectResponse
+    {
+        if ($amenity->hotels()->exists() || $amenity->roomTypes()->exists()) {
+            return back()->withErrors(['amenity' => "Amenity \"{$amenity->name}\" is currently in use and can't be deleted."]);
+        }
+
+        $amenity->delete();
+
+        return back()->with('success', "Amenity \"{$amenity->name}\" deleted.");
+    }
+
     // ── Image management ──────────────────────────────────────────────────────
 
     public function storeImages(Request $request, Hotel $hotel): RedirectResponse

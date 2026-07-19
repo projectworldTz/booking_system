@@ -287,6 +287,10 @@ Route::middleware('auth')->group(function () {
             });
         });
 
+        // Amenities (shared reference list; owner-manageable, not tied to a single hotel)
+        Route::post('/amenities', [OwnerHotelController::class, 'storeAmenity'])->name('amenities.store');
+        Route::delete('/amenities/{amenity}', [OwnerHotelController::class, 'destroyAmenity'])->name('amenities.destroy');
+
         // Booking management per hotel
         Route::prefix('hotels/{hotel}/bookings')->name('hotels.bookings.')->group(function () {
             Route::get('/', [OwnerBookingController::class, 'index'])->name('index');

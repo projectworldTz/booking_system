@@ -135,9 +135,18 @@
                 </div>
             </div>
 
-            @if($amenities->isNotEmpty())
             <div class="card p-6">
-                <h2 class="text-base font-bold text-slate-900 dark:text-white mb-5">{{ __('Amenities') }}</h2>
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white">{{ __('Amenities') }}</h2>
+                    <button type="button" x-data @click="$dispatch('open-manage-amenities')"
+                            class="btn-outline btn-sm flex items-center gap-1.5">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        {{ __('Add Amenity') }}
+                    </button>
+                </div>
+                @if($amenities->isNotEmpty())
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     @php $hotelAmenityIds = $hotel->amenities->pluck('id')->toArray(); @endphp
                     @foreach($amenities as $amenity)
@@ -149,8 +158,10 @@
                     </label>
                     @endforeach
                 </div>
+                @else
+                <p class="text-sm text-slate-400">{{ __('No amenities defined yet. Click "Add Amenity" to create your first one.') }}</p>
+                @endif
             </div>
-            @endif
 
             <div class="flex gap-3">
                 <button type="submit" class="btn-primary">{{ __('Save Changes') }}</button>
@@ -158,5 +169,7 @@
             </div>
         </div>
     </form>
+
+    @include('owner.hotels._manage-amenities-modal', ['amenities' => $amenities])
 </div>
 @endsection
